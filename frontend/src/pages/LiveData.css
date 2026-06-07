@@ -1,0 +1,122 @@
+/* ============================================================
+   Live Data Page
+   ============================================================ */
+
+.live-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Ticker */
+.crypto-ticker {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  padding: 16px;
+}
+.ticker-header {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.live-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 12px #ef4444; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.ticker-scroll {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 8px;
+}
+.ticker-scroll::-webkit-scrollbar { display: none; }
+
+.crypto-card {
+  min-width: 160px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.crypto-top { display: flex; align-items: center; gap: 8px; }
+.crypto-icon { width: 24px; height: 24px; border-radius: 50%; }
+.crypto-sym { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; }
+.crypto-price { font-size: 1.1rem; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
+.crypto-change { font-size: 0.75rem; font-weight: 600; }
+.crypto-change.up { color: #10b981; }
+.crypto-change.down { color: #ef4444; }
+
+/* Grid */
+.live-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+/* Weather Widget */
+.weather-widget {
+  background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(6,182,212,0.1));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.weather-info h3 { font-size: 1.4rem; margin-bottom: 4px; }
+.weather-info p { color: var(--text-muted); font-size: 0.9rem; }
+.weather-temp {
+  font-size: 3rem;
+  font-weight: 700;
+  font-family: 'Space Grotesk', sans-serif;
+  color: var(--accent2);
+}
+
+/* Exchange Table */
+.exchange-table { width: 100%; border-collapse: collapse; }
+.exchange-table th { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase; }
+.exchange-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.9rem; }
+.exchange-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* News */
+.news-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.news-item {
+  padding: 12px 16px;
+  background: var(--surface);
+  border-radius: 10px;
+  text-decoration: none;
+  transition: transform 0.2s, background 0.2s;
+}
+.news-item:hover {
+  transform: translateY(-2px);
+  background: rgba(99,102,241,0.1);
+}
+.news-item strong { display: block; color: var(--text); font-size: 0.9rem; margin-bottom: 4px; }
+.news-meta { display: flex; justify-content: space-between; color: var(--text-dim); font-size: 0.75rem; }
+
+@media (max-width: 900px) {
+  .live-grid { grid-template-columns: 1fr; }
+}

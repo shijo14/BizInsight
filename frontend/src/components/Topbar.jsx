@@ -1,0 +1,359 @@
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useTheme } from '../context/ThemeContext'
+import { useRole } from '../context/RoleContext'
+import { useAuth } from '../context/AuthContext'
+import { searchRegistry } from '../services/searchRegistry'
+import EpicLogo from './EpicLogo'
+import './Topbar.css'
+
+const NOTIFICATIONS = [
+  { id: 1, title: 'Anomaly Detected',        text: 'Unusual spike in user signups — investigating.',    time: '2 min ago',  color: '#ef4444', dot: '#ef4444' },
+  { id: 2, title: 'AI Pipeline Complete',     text: 'Model retrained with 99.1% accuracy.',              time: '18 min ago', color: '#10b981', dot: '#10b981' },
+  { id: 3, title: 'Sentiment Alert',          text: 'Negative sentiment up 3% on pricing feedback.',     time: '1 hr ago',   color: '#f59e0b', dot: '#f59e0b' },
+  { id: 4, title: 'Competitor Update',        text: 'DataPulse dropped pricing to $129/mo.',             time: '3 hr ago',   color: '#6366f1', dot: '#6366f1' },
+  { id: 5, title: 'Weekly Report Ready',      text: 'Your performance summary is available.',            time: '1 day ago',  color: '#06b6d4', dot: '#06b6d4' },
+]
+
+const CATBAR_ITEMS = [
+  { label: 'Dashboard',   icon: '⊞', path: '/dashboard'   },
+  { label: 'Analytics',   icon: '📊', path: '/analytics'   },
+  { label: 'Sentiment',   icon: '💬', path: '/sentiment'   },
+  { label: 'Competitor',  icon: '🔍', path: '/competitor'  },
+  { label: 'Predictions', icon: '📈', path: '/predictions' },
+  { label: 'Live Data',   icon: '🌐', path: '/live-data'   },
+  { label: 'Reports',     icon: '📋', path: '/reports'     },
+  { label: 'Settings',    icon: '⚙️',  path: '/settings'    },
+]
+
+export default function Topbar({ onToggleSidebar, sidebarOpen }) {
+  const navigate    = useNavigate()
+  const location    = useLocation()
+  const { theme, setTheme }    = useTheme()
+  const { role, setRole, isSuperAdmin } = useRole()
+  const { currentUser, logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login', { replace: true })
+  }
+
+  const [searchQuery,    setSearchQuery]    = useState('')
+  const [searchResults,  setSearchResults]  = useState([])
+  const [searchFocused,  setSearchFocused]  = useState(false)
+  const [searchCategory, setSearchCategory] = useState('All')
+  const [focusedIdx,     setFocusedIdx]     = useState(-1)
+
+  const [showNotifs,     setShowNotifs]     = useState(false)
+  const [showRole,       setShowRole]       = useState(false)
+  const [notifCount,     setNotifCount]     = useState(3)
+
+  const searchRef   = useRef(null)
+  const notifsRef   = useRef(null)
+  const roleRef     = useRef(null)
+
+  // ── Search ──────────────────────────────────────────────────
+  const doSearch = useCallback((q) => {
+    if (!q.trim()) { setSearchResults([]); return }
+    const results = searchRegistry(q, navigate, setTheme, setRole)
+    const filtered = searchCategory === 'All'
+      ? results
+      : results.filter(r => r.category === searchCategory)
+    setSearchResults(filtered)
+    setFocusedIdx(-1)
+  }, [navigate, setTheme, setRole, searchCategory])
+
+  useEffect(() => { doSearch(searchQuery) }, [searchQuery, searchCategory, doSearch])
+
+  // Keyboard shortcut Ctrl+K / Cmd+K
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault()
+        searchRef.current?.focus()
+      }
+      if (e.key === 'Escape') {
+        setSearchFocused(false)
+        setShowNotifs(false)
+        setShowRole(false)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
+
+  const handleKeyDown = (e) => {
+    if (!searchResults.length) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setFocusedIdx(i => Math.min(i + 1, searchResults.length - 1))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setFocusedIdx(i => Math.max(i - 1, 0))
+    } else if (e.key === 'Enter' && focusedIdx >= 0) {
+      e.preventDefault()
+      executeResult(searchResults[focusedIdx])
+    }
+  }
+
+  const executeResult = (item) => {
+    item.action()
+    setSearchQuery('')
+    setSearchResults([])
+    setSearchFocused(false)
+  }
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (notifsRef.current && !notifsRef.current.contains(e.target)) setShowNotifs(false)
+      if (roleRef.current   && !roleRef.current.contains(e.target))   setShowRole(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  // Group results by category
+  const grouped = searchResults.reduce((acc, item) => {
+    if (!acc[item.category]) acc[item.category] = []
+    acc[item.category].push(item)
+    return acc
+  }, {})
+
+  const themeOptions = [
+    { key: 'light',  icon: '☀️',  label: 'Light',  cls: 'light-btn'  },
+    { key: 'dark',   icon: '🌙',  label: 'Dark',   cls: ''           },
+    { key: 'modern', icon: '✨',  label: 'Modern', cls: 'modern-btn' },
+  ]
+
+  return (
+    <header className="topbar">
+      {/* ── Row 1 ───────────────────────────────────────────── */}
+      <div className="topbar-main">
+
+        {/* Hamburger */}
+        <button
+          className={`topbar-hamburger ${sidebarOpen ? 'open' : ''}`}
+          onClick={onToggleSidebar}
+          aria-label="Toggle sidebar"
+          id="sidebarToggleBtn"
+        >
+          <span /><span /><span />
+        </button>
+
+        {/* Logo — hidden on desktop since sidebar has it, visible on mobile */}
+        <div className="topbar-logo-area">
+          <EpicLogo size="sm" onClick={() => navigate('/dashboard')} />
+        </div>
+
+        {/* Search */}
+        <div className="topbar-search-wrap" style={{ position: 'relative' }}>
+          <select
+            className="search-category-select"
+            value={searchCategory}
+            onChange={e => setSearchCategory(e.target.value)}
+            aria-label="Search category"
+          >
+            {['All','Pages','Actions','Features','Metrics','Info'].map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+
+          <div className="topbar-search-input-wrap">
+            <input
+              ref={searchRef}
+              id="globalSearch"
+              className="topbar-search-input"
+              type="search"
+              placeholder="Search pages, actions, metrics…"
+              autoComplete="off"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              onKeyDown={handleKeyDown}
+              aria-label="Global search"
+            />
+            {!searchQuery && <kbd className="search-kbd">Ctrl K</kbd>}
+          </div>
+
+          <button className="topbar-search-btn" aria-label="Search" onClick={() => doSearch(searchQuery)}>
+            🔍
+          </button>
+
+          {/* Results Dropdown */}
+          {searchFocused && (searchQuery.trim() || searchResults.length > 0) && (
+            <div className="search-results-dropdown" role="listbox">
+              {searchResults.length === 0 && searchQuery.trim() ? (
+                <div style={{ padding: '16px', color: 'var(--text-dim)', fontSize: '0.85rem', textAlign: 'center' }}>
+                  No results for "<strong style={{color:'var(--text)'}}>{searchQuery}</strong>"
+                </div>
+              ) : (
+                Object.entries(grouped).map(([cat, items]) => (
+                  <div key={cat}>
+                    <div className="search-group-label">{cat}</div>
+                    {items.map((item, i) => {
+                      const globalIdx = searchResults.indexOf(item)
+                      return (
+                        <div
+                          key={item.id}
+                          className={`search-result-item ${focusedIdx === globalIdx ? 'focused' : ''}`}
+                          role="option"
+                          onClick={() => executeResult(item)}
+                          onMouseEnter={() => setFocusedIdx(globalIdx)}
+                        >
+                          <div className="sri-icon">{item.icon}</div>
+                          <div className="sri-info">
+                            <div className="sri-label">{item.label}</div>
+                            <div className="sri-desc">{item.description}</div>
+                          </div>
+                          <span className="sri-cat">{item.category}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ))
+              )}
+              {/* Ask BizBot */}
+              <div
+                className="search-ask-ai"
+                onClick={() => {
+                  setSearchFocused(false)
+                  window.dispatchEvent(new CustomEvent('open-bizbot', { detail: { query: searchQuery } }))
+                  setSearchQuery('')
+                }}
+              >
+                <span>🤖</span>
+                <span>Ask BizBot: "<strong>{searchQuery || 'anything about your business'}</strong>"</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right controls */}
+        <div className="topbar-right">
+          {/* Theme Pill */}
+          <div className="theme-pill" role="group" aria-label="Theme">
+            {themeOptions.map(opt => (
+              <button
+                key={opt.key}
+                id={`theme-${opt.key}`}
+                className={`theme-pill-btn ${opt.cls} ${theme === opt.key ? 'active' : ''}`}
+                onClick={() => setTheme(opt.key)}
+                title={`${opt.label} mode`}
+                aria-pressed={theme === opt.key}
+              >
+                <span>{opt.icon}</span>
+                <span>{opt.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Notifications */}
+          <div style={{ position: 'relative' }} ref={notifsRef}>
+            <button
+              className="topbar-notif-btn"
+              id="notifBtn"
+              onClick={() => { setShowNotifs(v => !v); setShowRole(false) }}
+              aria-label="Notifications"
+            >
+              🔔
+              {notifCount > 0 && <span className="notif-count">{notifCount}</span>}
+            </button>
+            {showNotifs && (
+              <div className="notif-dropdown">
+                <div className="notif-dropdown-header">
+                  <strong>Notifications</strong>
+                  <button className="notif-mark-all" onClick={() => setNotifCount(0)}>Mark all read</button>
+                </div>
+                {NOTIFICATIONS.map(n => (
+                  <div key={n.id} className="notif-item">
+                    <div className="notif-dot-type" style={{ background: n.dot }} />
+                    <div className="notif-item-text">
+                      <strong>{n.title}</strong>
+                      {n.text}
+                      <span className="notif-time">{n.time}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Logout Button */}
+          <button
+            className="topbar-logout-btn"
+            onClick={handleLogout}
+            title={`Sign out (${currentUser?.name || 'User'})`}
+            id="topbarLogoutBtn"
+          >
+            <span>⏻</span>
+            <span className="logout-label">Sign Out</span>
+          </button>
+
+          {/* Role Switcher */}
+          <div className="role-switcher" ref={roleRef}>
+            <button
+              className="role-badge-btn"
+              id="roleSwitcherBtn"
+              onClick={() => { setShowRole(v => !v); setShowNotifs(false) }}
+              aria-haspopup="true"
+              aria-expanded={showRole}
+            >
+              <span className="role-crown">{isSuperAdmin ? '👑' : '👤'}</span>
+              <span className="role-name">{isSuperAdmin ? 'Super Admin' : 'Admin'}</span>
+              <span className={`role-chevron ${showRole ? 'open' : ''}`}>▼</span>
+            </button>
+            {showRole && (
+              <div className="role-dropdown">
+                <div className="role-dropdown-header">
+                  <strong>Shijo Varghese</strong>
+                  <span>Switch active role</span>
+                </div>
+                {[
+                  { key: 'superadmin', label: 'Super Admin', desc: 'Full system access + Admin Panel', icon: '👑', cls: 'superadmin' },
+                  { key: 'admin',      label: 'Admin',       desc: 'Analytics & module access only',   icon: '👤', cls: 'admin'      },
+                ].map(opt => (
+                  <button
+                    key={opt.key}
+                    className={`role-option ${role === opt.key ? 'selected' : ''}`}
+                    onClick={() => { setRole(opt.key); setShowRole(false) }}
+                  >
+                    <div className={`role-option-icon ${opt.cls}`}>{opt.icon}</div>
+                    <div className="role-option-info">
+                      <strong>{opt.label}</strong>
+                      <span>{opt.desc}</span>
+                    </div>
+                    {role === opt.key && <span style={{ marginLeft: 'auto', color: 'var(--accent)', fontSize: '0.8rem' }}>✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Row 2: Category bar ─────────────────────────────── */}
+      <div className="topbar-catbar" role="navigation" aria-label="Quick navigation">
+        {CATBAR_ITEMS.filter(c => c.path !== '/admin' || isSuperAdmin).map(item => (
+          <button
+            key={item.path}
+            className={`catbar-item ${location.pathname === item.path ? 'active' : ''}`}
+            onClick={() => navigate(item.path)}
+          >
+            <span>{item.icon}</span>
+            <span>{item.label}</span>
+          </button>
+        ))}
+        {isSuperAdmin && (
+          <button
+            className={`catbar-item ${location.pathname === '/admin' ? 'active' : ''}`}
+            onClick={() => navigate('/admin')}
+          >
+            <span>🛡️</span>
+            <span>Admin Panel</span>
+          </button>
+        )}
+      </div>
+    </header>
+  )
+}

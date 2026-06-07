@@ -1,0 +1,179 @@
+/* ═══════════════════════════════════════════════════
+   EpicLogo — True Cinematic (Netflix-Style) Edition
+═══════════════════════════════════════════════════ */
+
+.epic-logo {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ────────────────────────────────────────────────────────────
+   1. THE CINEMATIC INTRO OVERLAY (Fullscreen when on login)
+───────────────────────────────────────────────────────────── */
+.epic-intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000; /* Pitch black for maximum dramatic effect */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  perspective: 1000px;
+  animation: fadeOverlay 0.8s ease forwards;
+  animation-delay: 3.7s; /* Fade out at the very end */
+  pointer-events: none;
+}
+@keyframes fadeOverlay {
+  to { opacity: 0; visibility: hidden; }
+}
+
+/* ── Phase 1: The "Stamp" ── */
+/* A giant glowing 'B' hexagon that drops in, pulses, then zooms past the camera */
+.intro-stamp {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  z-index: 2;
+  opacity: 0;
+  transform: scale(3);
+  animation: 
+    stampDrop 0.8s cubic-bezier(0.1, 0.9, 0.2, 1) forwards, /* Drops in */
+    stampGlow 2s ease-in-out forwards 0.8s,                 /* Hangs and glows */
+    stampZoom 0.5s cubic-bezier(0.8, 0, 0.2, 1) forwards 2.4s; /* Zooms into camera */
+}
+.intro-stamp-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* The thud drop */
+@keyframes stampDrop {
+  0%   { transform: scale(5); opacity: 0; filter: blur(10px); }
+  60%  { transform: scale(0.9); opacity: 1; filter: blur(0px); }
+  100% { transform: scale(1); opacity: 1; filter: blur(0px); }
+}
+/* The intense build-up glow */
+@keyframes stampGlow {
+  0%   { filter: drop-shadow(0 0 10px rgba(99,102,241,0.5)); }
+  50%  { filter: drop-shadow(0 0 80px rgba(6,182,212,1)) brightness(1.5); transform: scale(1.05); }
+  100% { filter: drop-shadow(0 0 20px rgba(139,92,246,0.8)); transform: scale(1); }
+}
+/* The hyperspace zoom into the camera, transitioning to the ribbons */
+@keyframes stampZoom {
+  0%   { transform: scale(1) translateZ(0); opacity: 1; filter: blur(0); }
+  100% { transform: scale(30) translateZ(500px); opacity: 0; filter: blur(20px); }
+}
+
+
+/* ── Phase 2: The "Spectrum Ribbons" ── */
+/* As the stamp zooms past, a barcode of colorful light stretches and explodes outward */
+.intro-spectrum {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  opacity: 0;
+  z-index: 1;
+  transform: scaleX(0.1);
+  animation: 
+    ribbonReveal 1.2s cubic-bezier(0.1, 0.9, 0.2, 1) forwards 2.6s, /* Expands horizontally */
+    ribbonFade 0.8s ease forwards 3.3s;                             /* Dissipates */
+}
+
+@keyframes ribbonReveal {
+  0%   { transform: scaleX(0.01) scaleY(0.1); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: scaleX(2.5) scaleY(1.5); opacity: 1; } /* Spreads extremely wide */
+}
+@keyframes ribbonFade {
+  to { opacity: 0; transform: scaleX(3) scaleY(2) translateZ(200px); filter: blur(20px); }
+}
+
+.spectrum-line {
+  width: calc(1vw + 2px);
+  height: 0;
+  background: var(--color);
+  box-shadow: 0 0 30px var(--color), 0 0 60px var(--color);
+  border-radius: 100px;
+  animation: lineStretch 0.6s cubic-bezier(0.8, 0, 0.2, 1) forwards;
+  animation-delay: calc(2.6s + var(--d)); /* Triggers exactly as stamp zooms */
+}
+@keyframes lineStretch {
+  0%   { height: 0; opacity: 0; }
+  50%  { opacity: 1; }
+  100% { height: var(--h); opacity: 0.8; }
+}
+
+
+/* ────────────────────────────────────────────────────────────
+   3. THE RESTING LOGO (Fades in seamlessly after intro)
+───────────────────────────────────────────────────────────── */
+.epic-resting-container {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* If the logo is animating, the resting container starts hidden and fades in */
+.epic-logo.is-animating:not(.intro-done) .epic-resting-container {
+  opacity: 0;
+  transform: scale(0.95);
+  animation: restingReveal 1.5s cubic-bezier(0.1, 0.9, 0.2, 1) forwards 3.8s;
+}
+
+@keyframes restingReveal {
+  0%   { opacity: 0; transform: scale(0.95) translateZ(-100px); filter: blur(10px); }
+  100% { opacity: 1; transform: scale(1) translateZ(0); filter: blur(0); }
+}
+
+/* ── Sizing Variants ── */
+.epic-logo--sm .epic-resting-container { gap: 9px; }
+.epic-logo--md .epic-resting-container { gap: 14px; }
+.epic-logo--lg .epic-resting-container { gap: 22px; }
+
+.epic-logo--sm .epic-logo__svg { width: 34px; height: 38px; }
+.epic-logo--md .epic-logo__svg { width: 52px; height: 58px; }
+.epic-logo--lg .epic-logo__svg { width: 80px; height: 90px; }
+
+
+/* ── Wordmark Styling ── */
+.epic-logo__wordmark {
+  display: flex;
+  align-items: baseline;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.epic-logo--sm .epic-logo__wordmark { font-size: 1.25rem; }
+.epic-logo--md .epic-logo__wordmark { font-size: 1.75rem; }
+.epic-logo--lg .epic-logo__wordmark { font-size: 2.8rem; }
+
+.epic-logo__biz { color: #f1f5f9; }
+.epic-logo__insight {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Hover Effects (Only active after intro is done) ── */
+.epic-logo.intro-done:hover .epic-logo__hex-bg {
+  filter: brightness(1.2) drop-shadow(0 0 15px rgba(99,102,241,0.7));
+  transition: filter 0.3s ease;
+}
+.epic-logo.intro-done:hover .epic-logo__wordmark {
+  letter-spacing: -0.01em;
+  transition: letter-spacing 0.3s ease;
+}
+
+/* ── Theme Adaptations ── */
+[data-theme="light"] .epic-logo__biz { color: #1e293b; }
+[data-theme="modern"] .epic-logo__biz { color: #e2e8f0; }

@@ -1,0 +1,236 @@
+/* ============================================================
+   BizInsight Sidebar — Collapsible & Role-aware
+   ============================================================ */
+
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--nav-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding-top: 0;
+  transition: transform var(--trans);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+}
+
+/* Logo area at top of sidebar */
+.sb-logo-area {
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* Sidebar Nav */
+.sidebar-inner {
+  padding: 0 12px 20px;
+  flex: 1;
+}
+
+/* Section */
+.sb-section {
+  margin-bottom: 24px;
+}
+
+.sb-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+.sb-section-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+.sb-chevron {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  transition: transform 0.2s;
+}
+.sb-chevron.collapsed {
+  transform: rotate(-90deg);
+}
+
+.sb-section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out, opacity 0.2s;
+  max-height: 500px;
+  opacity: 1;
+}
+.sb-section-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Nav Item */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  position: relative;
+}
+.nav-item:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+.nav-item.active {
+  background: linear-gradient(90deg, rgba(99,102,241,0.15) 0%, transparent 100%);
+  color: var(--accent);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 10%;
+  height: 80%;
+  width: 4px;
+  background: var(--accent);
+  border-radius: 0 4px 4px 0;
+}
+.nav-item.locked {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.nav-icon {
+  font-size: 1.1rem;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.nav-label {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.sb-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 50px;
+}
+.sb-badge.new { background: rgba(16,185,129,0.15); color: #10b981; }
+.sb-badge.un  { background: rgba(59,130,246,0.15); color: #3b82f6; }
+.sb-badge.lock { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+/* User Card (Bottom) */
+.sb-user-card {
+  margin-top: auto;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+.sb-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.sb-user-info {
+  flex: 1;
+  min-width: 0;
+}
+.sb-user-name {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sb-user-role {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+.sb-online-dot {
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--nav-bg);
+  position: absolute;
+  top: 14px;
+  left: 44px;
+}
+
+/* ── Logout button ── */
+.sb-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: calc(100% - 24px);
+  margin: 0 12px 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.18);
+  color: #f87171;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+.sb-logout-btn:hover {
+  background: rgba(239,68,68,0.18);
+  color: #fca5a5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(239,68,68,0.2);
+}
+.sb-logout-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+.sb-logout-label {
+  font-size: 0.85rem;
+}
+
+/* Adjust sidebar inner top padding since logo is now in sidebar */
+.sidebar-inner {
+  padding: 12px 12px 12px;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    box-shadow: none;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 20px 0 60px rgba(0,0,0,0.5);
+  }
+}

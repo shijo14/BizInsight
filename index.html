@@ -1,0 +1,1540 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BizInsight – AI-Powered Business Analytics Platform</title>
+  <meta name="description" content="BizInsight is an AI-powered business analytics and management platform helping businesses make smarter, data-driven decisions through intelligent insights and automation." />
+  <meta name="keywords" content="BizInsight, AI analytics, business intelligence, predictive analytics, machine learning, SME, sentiment analysis" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== TOP NAVBAR ===== -->
+  <nav id="navbar">
+    <div class="nav-left">
+      <button class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Toggle sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <a href="#home" class="bizlogo sm" style="text-decoration:none; margin-right:auto;">
+        <div class="bizlogo-hex-wrap">
+          <svg class="bizlogo-hex" viewBox="0 0 40 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="hexGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#6366f1" />
+                <stop offset="50%" stopColor="#8b5cf6" />
+                <stop offset="100%" stopColor="#06b6d4" />
+              </linearGradient>
+              <linearGradient id="hexGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#06b6d4" />
+                <stop offset="100%" stopColor="#6366f1" />
+              </linearGradient>
+            </defs>
+            <polygon class="hex-bg" points="20,2 37,11.5 37,34.5 20,44 3,34.5 3,11.5" />
+            <polygon class="hex-inner" points="20,8 32,15 32,31 20,38 8,31 8,15" />
+            <circle class="hex-spark" cx="20" cy="23" r="4" />
+            <text x="13" y="29" fill="white" font-size="16" font-weight="900" font-family="Space Grotesk, sans-serif">B</text>
+          </svg>
+        </div>
+        <div class="bizlogo-text">
+          <span class="bizlogo-biz">Biz</span>
+          <span class="bizlogo-insight">Insight</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="nav-center">
+      <div class="nav-search-wrap" style="position:relative;">
+        <svg class="search-svg" viewBox="0 0 20 20" fill="none"><circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <input type="search" class="nav-search-input" id="navSearch" placeholder="Search features, analytics, insights…" autocomplete="off" />
+        <kbd class="nav-search-kbd">⌘K</kbd>
+        <div class="search-dropdown" id="searchDropdown" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <!-- 3-Way Theme Toggle Pill -->
+      <div class="theme-toggle" id="themeToggle" role="group" aria-label="Theme switcher">
+        <button class="theme-btn active" data-theme-target="light" id="btn-light" title="Light Mode" aria-pressed="true">
+          <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Light
+        </button>
+        <button class="theme-btn" data-theme-target="dark" id="btn-dark" title="Dark Mode" aria-pressed="false">
+          <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M14 10.5A6 6 0 0 1 5.5 2a6.5 6.5 0 1 0 8.5 8.5z"/></svg>
+          Dark
+        </button>
+        <button class="theme-btn" data-theme-target="modern" id="btn-modern" title="Modern Mode" aria-pressed="false">
+          <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13l-1.5-4.5L2 7l4.5-1.5z"/></svg>
+          Modern
+        </button>
+      </div>
+
+      <button class="nav-notif-btn" id="navNotif" aria-label="Notifications" title="Notifications">
+        <svg viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M10 2a6 6 0 0 1 6 6v3l1.5 2.5H2.5L4 11V8a6 6 0 0 1 6-6z" stroke="currentColor" stroke-width="1.5"/><path d="M8.5 16a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.5"/></svg>
+        <span class="notif-dot"></span>
+      </button>
+
+      <!-- Auth: Sign In Button (shown when logged out) -->
+      <button class="btn-nav btn-signin" id="navSignIn">Sign In</button>
+
+      <!-- Auth: User Avatar + Sign Out (shown when logged in) -->
+      <div class="nav-user-wrap" id="navUserWrap" style="display:none;">
+        <div class="nav-user-avatar" id="navUserAvatar">U</div>
+        <span class="nav-user-name" id="navUserName">User</span>
+        <button class="btn-signout" id="navSignOut" title="Sign Out">
+          <svg viewBox="0 0 20 20" fill="none" width="14" height="14"><path d="M13 3h4v14h-4M8 14l4-4-4-4M12 10H4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== LEFT SIDEBAR ===== -->
+  <aside id="sidebar" class="sidebar">
+    <nav class="sidebar-inner" aria-label="Main Navigation">
+
+      <!-- Overview -->
+      <div class="sb-section">
+        <div class="sb-section-label">Overview</div>
+        <a href="#home" class="sb-item active" id="sbDashboard">
+          <span class="sb-icon">
+            <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+          <span class="sb-label">Dashboard</span>
+        </a>
+        <a href="#about" class="sb-item" id="sbAbout">
+          <span class="sb-icon">
+            <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v5M10 6.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+          <span class="sb-label">About BizInsight</span>
+        </a>
+      </div>
+
+      <!-- AI Features -->
+      <div class="sb-section">
+        <div class="sb-section-label">AI Features</div>
+        <a href="#feat-1" class="sb-item" id="sbAI">
+          <span class="sb-icon">
+            <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.22 4.22l2.12 2.12M13.66 13.66l2.12 2.12M4.22 15.78l2.12-2.12M13.66 6.34l2.12-2.12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+          <span class="sb-label">AI &amp; Machine Learning</span>
+          <span class="sb-badge new-badge">New</span>
+        </a>
+        <a href="#feat-2" class="sb-item" id="sbPred">
+          <span class="sb-icon">
+            <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><polyline points="2,14 7,9 11,12 18,5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14,5 18,5 18,9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="sb-label">Predictive Analytics</span>
+        </a>
+        <a href="#feat-3" class="sb-item" id="sbSent">
+          <span class="sb-icon">
+            <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><path d="M2 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6l-4 4V4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="sb-label">Sentiment Analysis</span>
+        </a>
+        <a href="#feat-4" class="sb-item" id="sbComp">
+          <span class="sb-icon">
+            <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+          <span class="sb-label">Competitor Analysis</span>
+        </a>
+        <a href="#feat-5" class="sb-item" id="sbViz">
+          <span class="sb-icon">
+            <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><rect x="2" y="10" width="3" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8.5" y="6" width="3" height="12" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="15" y="2" width="3" height="16" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+          <span class="sb-label">Data Visualization</span>
+        </a>
+        <a href="#feat-6" class="sb-item" id="sbRec">
+          <span class="sb-icon">
+            <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><path d="M10 2l1.8 5.4h5.7l-4.6 3.4 1.8 5.4L10 13l-4.7 3.2 1.8-5.4L2.5 7.4h5.7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="sb-label">Smart Recommendations</span>
+        </a>
+      </div>
+
+      <!-- Platform -->
+      <div class="sb-section">
+        <div class="sb-section-label">Platform</div>
+        <a href="#how" class="sb-item" id="sbHow">
+          <span class="sb-icon">
+            <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M10 6v4l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+          <span class="sb-label">How It Works</span>
+        </a>
+        <a href="#tech" class="sb-item" id="sbTech">
+          <span class="sb-icon">
+            <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><polyline points="4,8 2,10 4,12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="16,8 18,10 16,12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 4l-4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+          <span class="sb-label">Tech Stack</span>
+        </a>
+        <a href="#sdg" class="sb-item" id="sbSDG">
+          <span class="sb-icon">
+            <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M2 10h16M10 2a14 14 0 0 1 0 16M10 2a14 14 0 0 0 0 16" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+          <span class="sb-label">SDG Goals</span>
+          <span class="sb-badge un-badge">UN</span>
+        </a>
+        <a href="#contact" class="sb-item" id="sbContact">
+          <span class="sb-icon">
+            <svg viewBox="0 0 20 20" fill="none" width="16" height="16"><path d="M2 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4z" stroke="currentColor" stroke-width="1.5"/><polyline points="2,4 10,11 18,4" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="sb-label">Contact Us</span>
+        </a>
+      </div>
+
+      <!-- Quick Demo Shortcuts -->
+      <div class="sb-section">
+        <div class="sb-section-label">Live Demos</div>
+        <button class="sb-item sb-demo-btn" data-modal="aiDemoModal">
+          <span class="sb-icon">🤖</span>
+          <span class="sb-label">AI Demo</span>
+          <span class="sb-badge demo-badge">Try</span>
+        </button>
+        <button class="sb-item sb-demo-btn" data-modal="sentDemoModal">
+          <span class="sb-icon">💬</span>
+          <span class="sb-label">Sentiment Demo</span>
+          <span class="sb-badge demo-badge">Try</span>
+        </button>
+        <button class="sb-item sb-demo-btn" data-modal="vizDemoModal">
+          <span class="sb-icon">&#128202;</span>
+          <span class="sb-label">Viz Demo</span>
+          <span class="sb-badge demo-badge">Try</span>
+        </button>
+        <button class="sb-item sb-demo-btn" data-modal="recDemoModal">
+          <span class="sb-icon">&#128161;</span>
+          <span class="sb-label">Rec Demo</span>
+          <span class="sb-badge demo-badge">Try</span>
+        </button>
+        <button class="sb-item sb-demo-btn" data-modal="compDemoModal">
+          <span class="sb-icon">🔍</span>
+          <span class="sb-label">Competitor Demo</span>
+          <span class="sb-badge demo-badge">Try</span>
+        </button>
+      </div>
+
+    </nav>
+
+    <!-- Sidebar Footer / User -->
+    <div class="sb-footer">
+      <div class="sb-divider"></div>
+      <div class="sb-user-card">
+        <div class="sb-avatar" id="sbAvatar">SV</div>
+        <div class="sb-user-info">
+          <span class="sb-user-name" id="sbUserName">Shijo Varghese</span>
+          <span class="sb-user-role" id="sbUserRole">Lead Developer</span>
+        </div>
+        <span class="sb-online-dot" title="Online"></span>
+      </div>
+      <div class="sb-sdg-row">
+        <span class="sdg-chip sdg8">SDG 8</span>
+        <span class="sdg-chip sdg9">SDG 9</span>
+        <span class="sdg-chip sdg12">SDG 12</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Sidebar Overlay (mobile backdrop) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ===== MAIN CONTENT WRAPPER ===== -->
+  <main class="main-wrapper" id="mainWrapper">
+
+    <!-- ===== HERO ===== -->
+    <section id="home" class="hero">
+      <canvas id="particleCanvas"></canvas>
+      <div class="hero-glow glow-1"></div>
+      <div class="hero-glow glow-2"></div>
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          AI-Powered Business Intelligence
+        </div>
+        <h1>Make Smarter<br /><span class="gradient-text">Business Decisions</span><br />with AI Insights</h1>
+        <p class="hero-sub">
+          BizInsight empowers organizations with intelligent analytics, predictive forecasting,
+          and AI-driven recommendations — built for the modern digital enterprise.
+        </p>
+        <div class="hero-cta">
+          <a href="#features" class="btn-primary">Explore Features <span class="btn-arrow">→</span></a>
+          <a href="#about" class="btn-ghost">Learn More</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-num" data-target="95">0</span><span>%</span>
+            <span class="stat-label">Forecast Accuracy</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num" data-target="3">0</span><span>x</span>
+            <span class="stat-label">Faster Decisions</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num" data-target="60">0</span><span>%</span>
+            <span class="stat-label">Cost Reduction</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="dashboard-mockup">
+          <div class="mock-header">
+            <div class="mock-dots">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+            <span class="mock-title">BizInsight Dashboard</span>
+          </div>
+          <div class="mock-body">
+            <div class="mock-chart">
+              <div class="chart-bars">
+                <div class="bar" style="--h:55%; --delay:0.1s"></div>
+                <div class="bar" style="--h:70%; --delay:0.2s"></div>
+                <div class="bar" style="--h:45%; --delay:0.3s"></div>
+                <div class="bar" style="--h:85%; --delay:0.4s"></div>
+                <div class="bar" style="--h:60%; --delay:0.5s"></div>
+                <div class="bar" style="--h:90%; --delay:0.6s"></div>
+                <div class="bar" style="--h:75%; --delay:0.7s"></div>
+              </div>
+              <div class="chart-line">
+                <svg viewBox="0 0 280 80" preserveAspectRatio="none">
+                  <polyline class="line-path" points="10,60 50,45 90,55 130,25 170,35 210,15 260,20" />
+                </svg>
+              </div>
+            </div>
+            <div class="mock-cards">
+              <div class="mock-card blue">
+                <div class="mc-icon">📈</div>
+                <div class="mc-val">+24.5%</div>
+                <div class="mc-label">Revenue Growth</div>
+              </div>
+              <div class="mock-card purple">
+                <div class="mc-icon">🎯</div>
+                <div class="mc-val">89%</div>
+                <div class="mc-label">Sentiment Score</div>
+              </div>
+              <div class="mock-card green">
+                <div class="mc-icon">⚡</div>
+                <div class="mc-val">12ms</div>
+                <div class="mc-label">AI Response</div>
+              </div>
+            </div>
+            <div class="mock-insight">
+              <div class="insight-pulse"></div>
+              <span>🤖 AI Insight: Peak sales expected Friday — restock inventory now</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ABOUT ===== -->
+    <section id="about" class="about section">
+      <div class="container">
+        <div class="section-label">What is BizInsight</div>
+        <h2 class="section-title">A Smarter Way to Run<br /><span class="gradient-text">Your Business</span></h2>
+        <div class="about-grid">
+          <div class="about-text reveal">
+            <p>
+              <strong>BizInsight</strong> is an AI-powered business analytics and management platform
+              designed to help businesses make smarter and data-driven decisions through intelligent
+              insights and automation.
+            </p>
+            <p>
+              The project focuses on collecting, analyzing, and visualizing business data efficiently to improve
+              <span class="highlight">productivity</span>, <span class="highlight">customer engagement</span>,
+              <span class="highlight">financial performance</span>, and <span class="highlight">operational management</span>.
+            </p>
+            <p>
+              By integrating Artificial Intelligence, Machine Learning, and predictive analytics,
+              BizInsight helps organizations identify business patterns, forecast future trends, and
+              improve strategic planning.
+            </p>
+            <p>
+              BizInsight also includes <strong>customer sentiment analysis</strong> and <strong>competitor analysis</strong> modules
+              that allow businesses to better understand customer feedback and market competition.
+            </p>
+            <div class="about-tags">
+              <span class="tag">AI &amp; Machine Learning</span>
+              <span class="tag">Predictive Analytics</span>
+              <span class="tag">Data Visualization</span>
+              <span class="tag">Smart Automation</span>
+            </div>
+          </div>
+          <div class="about-visual reveal">
+            <div class="ai-brain-card">
+              <div class="brain-rings">
+                <div class="ring r1"></div>
+                <div class="ring r2"></div>
+                <div class="ring r3"></div>
+              </div>
+              <div class="brain-core">
+                <span class="brain-icon">🧠</span>
+                <span class="brain-label">AI Core</span>
+              </div>
+              <div class="orbit-node n1" style="--angle:0deg">📊</div>
+              <div class="orbit-node n2" style="--angle:72deg">🎯</div>
+              <div class="orbit-node n3" style="--angle:144deg">🤖</div>
+              <div class="orbit-node n4" style="--angle:216deg">📈</div>
+              <div class="orbit-node n5" style="--angle:288deg">💡</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FEATURES ===== -->
+    <section id="features" class="features section">
+      <div class="container">
+        <div class="section-label">Core Modules</div>
+        <h2 class="section-title">Everything Your Business<br /><span class="gradient-text">Needs to Grow</span></h2>
+        <div class="features-grid">
+
+          <div class="feature-card reveal" id="feat-1">
+            <div class="feat-icon-wrap" style="--color: #6366f1;">
+              <span class="feat-icon">🤖</span>
+            </div>
+            <h3>AI &amp; Machine Learning</h3>
+            <p>Leverage cutting-edge ML models to uncover hidden patterns in your business data and automate complex analytical tasks.</p>
+            <ul class="feat-list">
+              <li>Pattern recognition &amp; anomaly detection</li>
+              <li>Automated data processing pipelines</li>
+              <li>Intelligent recommendation engine</li>
+            </ul>
+            <div class="feat-mini-stats">
+              <div class="fms-item"><span class="fms-val">96.3%</span><span class="fms-label">Model Accuracy</span></div>
+              <div class="fms-item"><span class="fms-val">12ms</span><span class="fms-label">Inference Time</span></div>
+              <div class="fms-item"><span class="fms-val">5TB+</span><span class="fms-label">Data Processed</span></div>
+            </div>
+            <button class="feat-demo-btn" id="openAiDemo" aria-haspopup="dialog">Try Demo <span>→</span></button>
+            <div class="feat-glow" style="--color: #6366f1;"></div>
+          </div>
+
+          <div class="feature-card reveal" id="feat-2" style="--delay:0.1s">
+            <div class="feat-icon-wrap" style="--color: #06b6d4;">
+              <span class="feat-icon">📈</span>
+            </div>
+            <h3>Predictive Analytics</h3>
+            <p>Forecast future trends, sales, and market shifts with AI-powered predictive models to stay ahead of the competition.</p>
+            <ul class="feat-list">
+              <li>Sales &amp; revenue forecasting</li>
+              <li>Market trend prediction</li>
+              <li>Demand planning &amp; inventory optimization</li>
+            </ul>
+            <div class="feat-mini-chart" id="predMiniChart"></div>
+            <button class="feat-demo-btn" style="--demo-color:#06b6d4;" id="openPredDemo" aria-haspopup="dialog">Try Demo <span>→</span></button>
+            <div class="feat-glow" style="--color: #06b6d4;"></div>
+          </div>
+
+          <div class="feature-card reveal" id="feat-3" style="--delay:0.2s">
+            <div class="feat-icon-wrap" style="--color: #f59e0b;">
+              <span class="feat-icon">💬</span>
+            </div>
+            <h3>Customer Sentiment Analysis</h3>
+            <p>Understand how customers truly feel about your brand through NLP-powered sentiment analysis of reviews, feedback, and social media.</p>
+            <ul class="feat-list">
+              <li>Real-time sentiment scoring</li>
+              <li>Multi-channel feedback aggregation</li>
+              <li>Emotion &amp; intent classification</li>
+            </ul>
+            <div class="sent-emotion-row">
+              <span class="emo-pill" data-sentiment="pos">😊 Positive <strong>62%</strong></span>
+              <span class="emo-pill" data-sentiment="neu">😐 Neutral <strong>24%</strong></span>
+              <span class="emo-pill" data-sentiment="neg">😞 Negative <strong>14%</strong></span>
+            </div>
+            <button class="feat-demo-btn" style="--demo-color:#f59e0b;" id="openSentDemo" aria-haspopup="dialog">Try Demo <span>→</span></button>
+            <div class="feat-glow" style="--color: #f59e0b;"></div>
+          </div>
+
+          <div class="feature-card reveal" id="feat-4" style="--delay:0.3s">
+            <div class="feat-icon-wrap" style="--color: #ec4899;">
+              <span class="feat-icon">🔍</span>
+            </div>
+            <h3>Competitor Analysis</h3>
+            <p>Monitor and benchmark against competitors in real-time, gaining strategic intelligence to sharpen your market positioning.</p>
+            <ul class="feat-list">
+              <li>Competitive benchmarking</li>
+              <li>Market share analysis</li>
+              <li>Strategic gap identification &amp; nearby stores map</li>
+            </ul>
+            <button class="feat-demo-btn" style="--demo-color:#ec4899;" id="openCompDemo" aria-haspopup="dialog">Try Demo <span>→</span></button>
+            <button class="feat-demo-btn feat-map-btn" style="--demo-color:#ec4899; margin-top:6px;" onclick="document.getElementById('openCompDemo').click(); setTimeout(()=>document.getElementById('ctab-map').click(),50);">🗺️ Nearby Stores Map <span>→</span></button>
+            <div class="feat-glow" style="--color: #ec4899;"></div>
+          </div>
+
+          <div class="feature-card reveal" id="feat-5" style="--delay:0.4s">
+            <div class="feat-icon-wrap" style="--color: #10b981;">
+              <span class="feat-icon">📊</span>
+            </div>
+            <h3>Data Visualization</h3>
+            <p>Transform raw data into stunning, interactive dashboards and charts that tell a clear story and drive actionable decisions.</p>
+            <ul class="feat-list">
+              <li>Interactive real-time dashboards</li>
+              <li>Custom KPI tracking boards</li>
+              <li>Export-ready reporting</li>
+            </ul>
+            <button class="feat-demo-btn" style="--demo-color:#10b981;" id="openVizDemo" aria-haspopup="dialog">Try Demo <span>&#x2192;</span></button>
+            <div class="feat-glow" style="--color: #10b981;"></div>
+          </div>
+
+          <div class="feature-card reveal" id="feat-6" style="--delay:0.5s">
+            <div class="feat-icon-wrap" style="--color: #8b5cf6;">
+              <span class="feat-icon">💡</span>
+            </div>
+            <h3>Smart Recommendations</h3>
+            <p>Receive AI-generated strategic recommendations tailored to your business context, helping prioritize actions with the highest ROI.</p>
+            <ul class="feat-list">
+              <li>Personalized business action plans</li>
+              <li>ROI-ranked opportunity alerts</li>
+              <li>Continuous learning &amp; adaptation</li>
+            </ul>
+            <button class="feat-demo-btn" style="--demo-color:#8b5cf6;" id="openRecDemo" aria-haspopup="dialog">Try Demo <span>&#x2192;</span></button>
+            <div class="feat-glow" style="--color: #8b5cf6;"></div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== AI CREATIVITY ENGINE ===== -->
+    <section id="creativity" class="creativity section">
+      <div class="container">
+        <div class="section-label">AI Creativity Engine</div>
+        <h2 class="section-title">Where Data Meets<br /><span class="gradient-text">Creative Intelligence</span></h2>
+        <p class="section-sub">BizInsight doesn't just analyze — it creates. Watch the AI generate business insights, summaries, and visual stories in real-time.</p>
+
+        <!-- Floating Keywords -->
+        <div class="keyword-cloud" id="keywordCloud" aria-hidden="true">
+          <span class="kw kw-1">Machine Learning</span>
+          <span class="kw kw-2">Forecasting</span>
+          <span class="kw kw-3">Sentiment</span>
+          <span class="kw kw-4">Revenue Growth</span>
+          <span class="kw kw-5">Automation</span>
+          <span class="kw kw-6">Deep Learning</span>
+          <span class="kw kw-7">NLP</span>
+          <span class="kw kw-8">Insights</span>
+          <span class="kw kw-9">Predictive</span>
+          <span class="kw kw-10">Analytics</span>
+          <span class="kw kw-11">AI Models</span>
+          <span class="kw kw-12">Data Pipeline</span>
+        </div>
+
+        <div class="creativity-grid">
+          <!-- Typewriter Card -->
+          <div class="creat-card reveal" id="creat-typewriter">
+            <div class="creat-card-header">
+              <span class="creat-badge">🤖 AI Writing</span>
+              <span class="creat-live-dot"></span>
+            </div>
+            <h4>Live Business Summary Generator</h4>
+            <div class="typewriter-output" id="typewriterOutput"><span class="tw-cursor">|</span></div>
+            <div class="creat-prompt-chips">
+              <button class="cp-chip" data-prompt="retail">Retail Report</button>
+              <button class="cp-chip" data-prompt="saas">SaaS Analysis</button>
+              <button class="cp-chip" data-prompt="finance">Finance Brief</button>
+              <button class="cp-chip active" data-prompt="executive">Executive Summary</button>
+            </div>
+          </div>
+
+          <!-- Data Story Card -->
+          <div class="creat-card reveal" id="creat-datastory" style="--delay:0.15s">
+            <div class="creat-card-header">
+              <span class="creat-badge">📊 Data Story</span>
+            </div>
+            <h4>Auto-Generated Visual Report</h4>
+            <div class="data-story-vis">
+              <div class="ds-bar-row"><span>Q1 Revenue</span><div class="ds-bar"><div class="ds-fill" style="--w:68%; --c:#6366f1;"></div></div><span>$128k</span></div>
+              <div class="ds-bar-row"><span>Q2 Revenue</span><div class="ds-bar"><div class="ds-fill" style="--w:82%; --c:#06b6d4;"></div></div><span>$156k</span></div>
+              <div class="ds-bar-row"><span>Q3 Revenue</span><div class="ds-bar"><div class="ds-fill" style="--w:91%; --c:#10b981;"></div></div><span>$174k</span></div>
+              <div class="ds-bar-row"><span>Q4 Forecast</span><div class="ds-bar"><div class="ds-fill" style="--w:100%; --c:#f59e0b; animation: fillPulse 2s ease infinite;"></div></div><span>$192k ✨</span></div>
+            </div>
+            <div class="ds-insight">📡 AI Insight: <em>Q4 trajectory exceeds growth benchmark by +18.3%</em></div>
+          </div>
+
+          <!-- Idea Burst Card -->
+          <div class="creat-card reveal" id="creat-ideas" style="--delay:0.3s">
+            <div class="creat-card-header">
+              <span class="creat-badge">💡 Idea Engine</span>
+            </div>
+            <h4>AI Opportunity Burst</h4>
+            <div class="idea-burst" id="ideaBurst">
+              <div class="ib-center">🧠<br><small>AI Core</small></div>
+              <div class="ib-item ib-1">📦 Inventory<br>Restock</div>
+              <div class="ib-item ib-2">💬 Launch<br>SMS Campaign</div>
+              <div class="ib-item ib-3">📈 Upsell<br>Premium</div>
+              <div class="ib-item ib-4">🤝 Partner<br>Collab</div>
+              <div class="ib-item ib-5">⚡ Automate<br>KYC</div>
+            </div>
+            <button class="demo-action-btn" id="refreshIdeasBtn" style="margin-top:12px; width:100%;">🔄 Refresh Ideas</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== HOW IT WORKS ===== -->
+    <section id="how" class="how section">
+      <div class="container">
+        <div class="section-label">How It Works</div>
+        <h2 class="section-title">From Raw Data to<br /><span class="gradient-text">Actionable Intelligence</span></h2>
+        <div class="steps-wrapper">
+          <div class="step-line"></div>
+          <div class="steps-grid">
+            <div class="step reveal">
+              <div class="step-num">01</div>
+              <div class="step-icon">🗄️</div>
+              <h3>Data Collection</h3>
+              <p>BizInsight aggregates data from all your business sources — sales, CRM, social media, and operations — into one unified platform.</p>
+            </div>
+            <div class="step reveal" style="--delay:0.15s">
+              <div class="step-num">02</div>
+              <div class="step-icon">⚙️</div>
+              <h3>AI Processing</h3>
+              <p>Powerful ML models and TensorFlow pipelines process and cleanse the data, identifying meaningful patterns and correlations.</p>
+            </div>
+            <div class="step reveal" style="--delay:0.3s">
+              <div class="step-num">03</div>
+              <div class="step-icon">📊</div>
+              <h3>Visualization</h3>
+              <p>Results surface as rich, interactive dashboards and real-time charts built with React.js for instant clarity.</p>
+            </div>
+            <div class="step reveal" style="--delay:0.45s">
+              <div class="step-num">04</div>
+              <div class="step-icon">🎯</div>
+              <h3>Actionable Insights</h3>
+              <p>AI-generated recommendations and alerts guide strategic decisions, driving measurable growth and efficiency gains.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SDG GOALS ===== -->
+    <section id="sdg" class="sdg section">
+      <div class="container">
+        <div class="section-label">Sustainability</div>
+        <h2 class="section-title">Aligned with Global<br /><span class="gradient-text">Development Goals</span></h2>
+        <p class="section-sub">BizInsight is built with purpose — strongly aligned with the United Nations Sustainable Development Goals.</p>
+        <div class="sdg-grid">
+          <div class="sdg-card reveal" id="sdg-8">
+            <div class="sdg-badge" style="--c:#f59e0b;">8</div>
+            <div class="sdg-content">
+              <h3>Decent Work &amp; Economic Growth</h3>
+              <p>By empowering businesses with data-driven efficiency and automation, BizInsight fosters sustainable economic growth and supports creation of quality employment.</p>
+              <div class="sdg-pillars">
+                <span>Productivity</span>
+                <span>Employment</span>
+                <span>Growth</span>
+              </div>
+            </div>
+          </div>
+          <div class="sdg-card reveal" id="sdg-9" style="--delay:0.15s">
+            <div class="sdg-badge" style="--c:#f97316;">9</div>
+            <div class="sdg-content">
+              <h3>Industry, Innovation &amp; Infrastructure</h3>
+              <p>BizInsight drives industrial innovation through modern AI and cloud-ready infrastructure, enabling SMEs to compete with enterprise-grade intelligence.</p>
+              <div class="sdg-pillars">
+                <span>Innovation</span>
+                <span>Infrastructure</span>
+                <span>Technology</span>
+              </div>
+            </div>
+          </div>
+          <div class="sdg-card reveal" id="sdg-12" style="--delay:0.3s">
+            <div class="sdg-badge" style="--c:#10b981;">12</div>
+            <div class="sdg-content">
+              <h3>Responsible Consumption &amp; Production</h3>
+              <p>Smart inventory management and demand forecasting help businesses eliminate waste, optimize resource use, and promote sustainable consumption patterns.</p>
+              <div class="sdg-pillars">
+                <span>Sustainability</span>
+                <span>Efficiency</span>
+                <span>Responsibility</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TECH STACK ===== -->
+    <section id="tech" class="tech section">
+      <div class="container">
+        <div class="section-label">Technology Stack</div>
+        <h2 class="section-title">Built with<br /><span class="gradient-text">Modern Technologies</span></h2>
+        <p class="section-sub">The project is developed using modern technologies such as React.js, Node.js, MongoDB, Python, and TensorFlow, providing a secure, scalable, and user-friendly environment suitable for small and medium-scale enterprises.</p>
+        <div class="tech-grid">
+          <div class="tech-card reveal" id="tc-react">
+            <div class="tech-logo">⚛️</div>
+            <h3>React.js</h3>
+            <p>Dynamic, component-based frontend delivering blazing-fast, interactive dashboards and real-time data visualizations.</p>
+            <div class="tech-bar"><div class="tech-fill" style="--w:92%; --c:#61dafb;"></div></div>
+            <span class="tech-pct">Frontend</span>
+          </div>
+          <div class="tech-card reveal" id="tc-node" style="--delay:0.1s">
+            <div class="tech-logo">🟢</div>
+            <h3>Node.js</h3>
+            <p>High-performance, event-driven backend powering scalable REST APIs and real-time data processing pipelines.</p>
+            <div class="tech-bar"><div class="tech-fill" style="--w:88%; --c:#68a063;"></div></div>
+            <span class="tech-pct">Backend</span>
+          </div>
+          <div class="tech-card reveal" id="tc-mongo" style="--delay:0.2s">
+            <div class="tech-logo">🍃</div>
+            <h3>MongoDB</h3>
+            <p>Flexible NoSQL database enabling efficient storage and retrieval of complex, schema-free business datasets at scale.</p>
+            <div class="tech-bar"><div class="tech-fill" style="--w:85%; --c:#47a248;"></div></div>
+            <span class="tech-pct">Database</span>
+          </div>
+          <div class="tech-card reveal" id="tc-python" style="--delay:0.3s">
+            <div class="tech-logo">🐍</div>
+            <h3>Python</h3>
+            <p>The backbone of BizInsight's AI layer — powering data science, ML model training, and intelligent analytics workflows.</p>
+            <div class="tech-bar"><div class="tech-fill" style="--w:95%; --c:#3572a5;"></div></div>
+            <span class="tech-pct">AI / ML</span>
+          </div>
+          <div class="tech-card reveal" id="tc-tf" style="--delay:0.4s">
+            <div class="tech-logo">🔶</div>
+            <h3>TensorFlow</h3>
+            <p>Google's open-source ML framework driving predictive models, sentiment analysis, and deep learning capabilities.</p>
+            <div class="tech-bar"><div class="tech-fill" style="--w:90%; --c:#ff6f00;"></div></div>
+            <span class="tech-pct">Deep Learning</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Nearby stores map moved to modal -->
+
+    <!-- ===== CTA / CONTACT ===== -->
+    <section id="contact" class="cta-section section">
+      <div class="container">
+        <div class="cta-card reveal">
+          <div class="cta-glow-1"></div>
+          <div class="cta-glow-2"></div>
+          <div class="cta-content">
+            <div class="section-label" style="text-align:center; margin-bottom:1rem;">Get Started Today</div>
+            <h2>Ready to Transform Your<br /><span class="gradient-text">Business with AI?</span></h2>
+            <p>Join forward-thinking enterprises already using BizInsight to drive smarter decisions, accelerate growth, and compete effectively in the digital era.</p>
+            <div class="cta-actions">
+              <a href="#features" class="btn-primary" id="cta-explore">Explore BizInsight →</a>
+              <a href="mailto:shijo@bizinsight.ai" class="btn-ghost" id="cta-contact">Contact Us</a>
+            </div>
+            <!-- Testimonials -->
+            <div class="testimonials-row">
+              <div class="testi-card">
+                <div class="testi-stars">★★★★★</div>
+                <p>"BizInsight's predictive analytics cut our inventory waste by 34% in the first quarter."</p>
+                <div class="testi-author">— Priya M., Retail Director</div>
+              </div>
+              <div class="testi-card">
+                <div class="testi-stars">★★★★★</div>
+                <p>"The competitor map feature literally showed us 3 gaps in our market we never knew existed."</p>
+                <div class="testi-author">— David K., Strategy Lead</div>
+              </div>
+              <div class="testi-card">
+                <div class="testi-stars">★★★★☆</div>
+                <p>"Sentiment analysis helped us identify churn risk customers before they left. Game changer."</p>
+                <div class="testi-author">— Sara T., Customer Success</div>
+              </div>
+            </div>
+            <div class="cta-author">
+              <div class="author-avatar">SV</div>
+              <div class="author-info">
+                <strong>Shijo Varghese</strong>
+                <span>Creator &amp; Lead Developer, BizInsight</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-top">
+          <div class="footer-brand">
+            <a href="#home" class="nav-logo">
+              <span class="logo-icon">⬡</span>
+              <span>Biz<span class="accent">Insight</span></span>
+            </a>
+            <p>AI-powered business analytics for the modern enterprise. Smarter decisions, faster growth.</p>
+          </div>
+          <div class="footer-links">
+            <div class="fl-group">
+              <h4>Platform</h4>
+              <a href="#features">Features</a>
+              <a href="#how">How It Works</a>
+              <a href="#tech">Tech Stack</a>
+            </div>
+            <div class="fl-group">
+              <h4>Company</h4>
+              <a href="#about">About</a>
+              <a href="#sdg">SDG Goals</a>
+              <a href="#contact">Contact</a>
+            </div>
+          </div>
+          <div class="fl-group">
+            <h4>New Features</h4>
+            <a href="#creativity">AI Creativity Engine</a>
+            <a href="#competitor-map">Nearby Stores Map</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 BizInsight — Prepared by <strong>Shijo Varghese</strong></span>
+        <span>Aligned with UN SDG 8 · SDG 9 · SDG 12</span>
+      </div>
+    </div>
+  </footer>
+
+  </main><!-- /.main-wrapper -->
+
+  <!-- ===== AI & ML DEMO MODAL ===== -->
+  <div id="aiDemoModal" class="ai-modal-overlay" role="dialog" aria-modal="true" aria-label="AI & Machine Learning Demo" hidden>
+    <div class="ai-modal">
+      <div class="ai-modal-header">
+        <div class="ai-modal-title">
+          <span class="ai-modal-icon">🤖</span>
+          <div>
+            <h2>AI &amp; Machine Learning</h2>
+            <p>Interactive live demos — no setup required</p>
+          </div>
+        </div>
+        <button class="ai-modal-close" id="closeAiDemo" aria-label="Close demo">&times;</button>
+      </div>
+      <div class="ai-tabs" role="tablist">
+        <button class="ai-tab active" role="tab" data-tab="anomaly" id="tab-anomaly" aria-selected="true">📊 Anomaly Detection</button>
+        <button class="ai-tab" role="tab" data-tab="recommend" id="tab-recommend" aria-selected="false">💡 Recommendation Engine</button>
+        <button class="ai-tab" role="tab" data-tab="pipeline" id="tab-pipeline" aria-selected="false">⚙️ Data Pipeline</button>
+      </div>
+      <div class="ai-tab-panel active" id="panel-anomaly" role="tabpanel" aria-labelledby="tab-anomaly">
+        <div class="demo-desc">Click on the chart below to add data points. The AI will instantly analyze them for anomalies.</div>
+        <div class="anomaly-workspace">
+          <div class="anomaly-chart-wrap">
+            <canvas id="anomalyCanvas" width="640" height="220"></canvas>
+            <div class="anomaly-legend">
+              <span class="legend-dot normal"></span> Normal &nbsp;
+              <span class="legend-dot anomaly"></span> Anomaly &nbsp;
+              <span class="legend-dot new"></span> New Point
+            </div>
+          </div>
+          <div class="anomaly-panel">
+            <div class="anomaly-status" id="anomalyStatus">
+              <div class="status-icon" id="anomalyStatusIcon">🟢</div>
+              <div>
+                <div class="status-title" id="anomalyStatusTitle">System Normal</div>
+                <div class="status-sub" id="anomalyStatusSub">Click chart to add data</div>
+              </div>
+            </div>
+            <div class="anomaly-stats">
+              <div class="a-stat"><span id="totalPoints">12</span><label>Data Points</label></div>
+              <div class="a-stat"><span id="anomalyCount">1</span><label>Anomalies</label></div>
+              <div class="a-stat"><span id="anomalyScore">94%</span><label>Confidence</label></div>
+            </div>
+            <div class="anomaly-log" id="anomalyLog">
+              <div class="log-entry">✅ Baseline model trained on 12 points</div>
+              <div class="log-entry warn">⚠️ Point #7 flagged — value deviation: +2.4σ</div>
+            </div>
+            <button class="demo-action-btn" id="resetAnomalyBtn">↺ Reset Data</button>
+          </div>
+        </div>
+      </div>
+      <div class="ai-tab-panel" id="panel-recommend" role="tabpanel" aria-labelledby="tab-recommend" hidden>
+        <div class="demo-desc">Enter your business metrics and let the AI generate strategic recommendations tailored to your profile.</div>
+        <div class="rec-workspace">
+          <div class="rec-form">
+            <div class="rec-field">
+              <label for="recRevenue">Monthly Revenue ($)</label>
+              <input type="number" id="recRevenue" placeholder="e.g. 45000" min="0" />
+            </div>
+            <div class="rec-field">
+              <label for="recGrowth">Growth Rate (%)</label>
+              <input type="number" id="recGrowth" placeholder="e.g. 12" />
+            </div>
+            <div class="rec-field">
+              <label for="recChurn">Churn Rate (%)</label>
+              <input type="number" id="recChurn" placeholder="e.g. 5" min="0" max="100" />
+            </div>
+            <div class="rec-field">
+              <label for="recSentiment">Customer Sentiment (0-100)</label>
+              <input type="range" id="recSentiment" min="0" max="100" value="70" />
+              <div class="range-display"><span id="sentimentVal">70</span> / 100</div>
+            </div>
+            <div class="rec-field">
+              <label for="recIndustry">Industry</label>
+              <select id="recIndustry">
+                <option value="retail">Retail &amp; E-commerce</option>
+                <option value="saas">SaaS / Technology</option>
+                <option value="finance">Finance &amp; Banking</option>
+                <option value="healthcare">Healthcare</option>
+                <option value="manufacturing">Manufacturing</option>
+              </select>
+            </div>
+            <button class="demo-action-btn full" id="runRecommendBtn">🤖 Generate AI Recommendations</button>
+          </div>
+          <div class="rec-results" id="recResults">
+            <div class="rec-placeholder">
+              <span>🧠</span>
+              <p>Fill in your metrics and click <strong>Generate</strong> to see personalized AI insights</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ai-tab-panel" id="panel-pipeline" role="tabpanel" aria-labelledby="tab-pipeline" hidden>
+        <div class="demo-desc">Watch how BizInsight's ML pipeline processes raw business data in real-time — from ingestion to insight.</div>
+        <div class="pipeline-workspace">
+          <div class="pipeline-stages" id="pipelineStages">
+            <div class="pipe-stage" id="ps-ingest" data-stage="0">
+              <div class="ps-icon">🗄️</div>
+              <div class="ps-name">Data Ingestion</div>
+              <div class="ps-status">Idle</div>
+              <div class="ps-bar"><div class="ps-fill"></div></div>
+            </div>
+            <div class="pipe-arrow">→</div>
+            <div class="pipe-stage" id="ps-clean" data-stage="1">
+              <div class="ps-icon">🧹</div>
+              <div class="ps-name">Cleaning &amp; Normalization</div>
+              <div class="ps-status">Idle</div>
+              <div class="ps-bar"><div class="ps-fill"></div></div>
+            </div>
+            <div class="pipe-arrow">→</div>
+            <div class="pipe-stage" id="ps-feature" data-stage="2">
+              <div class="ps-icon">🔬</div>
+              <div class="ps-name">Feature Engineering</div>
+              <div class="ps-status">Idle</div>
+              <div class="ps-bar"><div class="ps-fill"></div></div>
+            </div>
+            <div class="pipe-arrow">→</div>
+            <div class="pipe-stage" id="ps-model" data-stage="3">
+              <div class="ps-icon">🧠</div>
+              <div class="ps-name">ML Model Inference</div>
+              <div class="ps-status">Idle</div>
+              <div class="ps-bar"><div class="ps-fill"></div></div>
+            </div>
+            <div class="pipe-arrow">→</div>
+            <div class="pipe-stage" id="ps-output" data-stage="4">
+              <div class="ps-icon">📊</div>
+              <div class="ps-name">Insight Output</div>
+              <div class="ps-status">Idle</div>
+              <div class="ps-bar"><div class="ps-fill"></div></div>
+            </div>
+          </div>
+          <div class="pipeline-log" id="pipelineLog">
+            <div class="plog-placeholder">Click "Run Pipeline" to start the simulation</div>
+          </div>
+          <div class="pipeline-result" id="pipelineResult" hidden>
+            <div class="pr-metric"><span id="prRevenue"></span><label>Predicted Revenue</label></div>
+            <div class="pr-metric"><span id="prChurn"></span><label>Churn Risk</label></div>
+            <div class="pr-metric"><span id="prOpportunity"></span><label>Growth Opportunity</label></div>
+            <div class="pr-metric"><span id="prConfidence"></span><label>Model Confidence</label></div>
+          </div>
+          <div class="pipeline-controls">
+            <button class="demo-action-btn" id="runPipelineBtn">▶ Run Pipeline</button>
+            <button class="demo-action-btn secondary" id="resetPipelineBtn">↺ Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PREDICTIVE ANALYTICS DEMO MODAL ===== -->
+  <div id="predDemoModal" class="ai-modal-overlay pred-modal-overlay" role="dialog" aria-modal="true" aria-label="Predictive Analytics Demo" hidden>
+    <div class="ai-modal">
+      <div class="ai-modal-header">
+        <div class="ai-modal-title">
+          <span class="ai-modal-icon pred-modal-icon">📈</span>
+          <div>
+            <h2>Predictive Analytics</h2>
+            <p>Live AI-powered forecasting demos</p>
+          </div>
+        </div>
+        <button class="ai-modal-close" id="closePredDemo" aria-label="Close demo">&times;</button>
+      </div>
+      <div class="ai-tabs" role="tablist">
+        <button class="ai-tab active" role="tab" data-ptab="forecast" id="ptab-forecast" aria-selected="true">📊 Sales Forecast</button>
+        <button class="ai-tab" role="tab" data-ptab="trend" id="ptab-trend" aria-selected="false">📡 Market Trends</button>
+        <button class="ai-tab" role="tab" data-ptab="demand" id="ptab-demand" aria-selected="false">📦 Demand Planning</button>
+      </div>
+      <div class="ai-tab-panel active" id="ppanel-forecast" role="tabpanel">
+        <div class="demo-desc">Adjust the controls below to see AI-generated revenue forecasts with confidence intervals rendered in real-time.</div>
+        <div class="pred-controls">
+          <div class="pred-ctrl-group">
+            <label>Base Revenue ($)</label>
+            <input type="number" id="predBaseRevenue" value="45000" min="1000" step="1000" />
+          </div>
+          <div class="pred-ctrl-group">
+            <label>Forecast Period</label>
+            <select id="predPeriod">
+              <option value="6">6 Months</option>
+              <option value="12" selected>12 Months</option>
+              <option value="24">24 Months</option>
+            </select>
+          </div>
+          <div class="pred-ctrl-group">
+            <label>Growth Scenario</label>
+            <select id="predScenario">
+              <option value="conservative">Conservative (+5%)</option>
+              <option value="moderate" selected>Moderate (+12%)</option>
+              <option value="aggressive">Aggressive (+22%)</option>
+            </select>
+          </div>
+          <button class="demo-action-btn" id="runForecastBtn">▶ Run Forecast</button>
+        </div>
+        <div class="forecast-chart-wrap">
+          <canvas id="forecastCanvas" width="780" height="260"></canvas>
+        </div>
+        <div class="forecast-metrics" id="forecastMetrics" hidden>
+          <div class="fm-card"><span id="fmPeak"></span><label>Peak Revenue</label></div>
+          <div class="fm-card"><span id="fmCAGR"></span><label>Projected CAGR</label></div>
+          <div class="fm-card"><span id="fmTotal"></span><label>Total Forecast Revenue</label></div>
+          <div class="fm-card"><span id="fmConfidence"></span><label>Model Confidence</label></div>
+        </div>
+      </div>
+      <div class="ai-tab-panel" id="ppanel-trend" role="tabpanel" hidden>
+        <div class="demo-desc">Select a market sector and timeframe — the AI will score trend momentum and surface key signals driving the prediction.</div>
+        <div class="trend-workspace">
+          <div class="trend-form">
+            <div class="rec-field">
+              <label for="trendSector">Market Sector</label>
+              <select id="trendSector">
+                <option value="ecommerce">E-Commerce &amp; Retail</option>
+                <option value="fintech">FinTech &amp; Payments</option>
+                <option value="healthtech">HealthTech &amp; MedAI</option>
+                <option value="saas">SaaS &amp; Cloud</option>
+                <option value="manufacturing">Smart Manufacturing</option>
+                <option value="sustainability">Green &amp; Sustainability</option>
+              </select>
+            </div>
+            <div class="rec-field">
+              <label for="trendHorizon">Prediction Horizon</label>
+              <select id="trendHorizon">
+                <option value="3">3 Months</option>
+                <option value="6" selected>6 Months</option>
+                <option value="12">12 Months</option>
+              </select>
+            </div>
+            <button class="demo-action-btn full" id="runTrendBtn">🔍 Analyze Market Trend</button>
+          </div>
+          <div class="trend-results" id="trendResults">
+            <div class="rec-placeholder"><span>📡</span><p>Select a sector and click <strong>Analyze</strong></p></div>
+          </div>
+        </div>
+      </div>
+      <div class="ai-tab-panel" id="ppanel-demand" role="tabpanel" hidden>
+        <div class="demo-desc">Enter your product details and the AI will generate a demand forecast, reorder point, and stockout risk assessment.</div>
+        <div class="demand-workspace">
+          <div class="demand-form">
+            <div class="rec-field"><label for="demandProduct">Product / SKU Name</label><input type="text" id="demandProduct" placeholder="e.g. Premium Headset X1" /></div>
+            <div class="rec-field"><label for="demandStock">Current Stock (units)</label><input type="number" id="demandStock" placeholder="e.g. 320" min="0" /></div>
+            <div class="rec-field"><label for="demandVelocity">Avg. Daily Sales (units)</label><input type="number" id="demandVelocity" placeholder="e.g. 14" min="0" /></div>
+            <div class="rec-field"><label for="demandLeadTime">Supplier Lead Time (days)</label><input type="number" id="demandLeadTime" placeholder="e.g. 21" min="1" /></div>
+            <div class="rec-field"><label for="demandSeason">Seasonality</label>
+              <select id="demandSeason">
+                <option value="none">None / Flat</option>
+                <option value="peak">Peak Season (+40%)</option>
+                <option value="low">Off-Season (-25%)</option>
+                <option value="holiday">Holiday Surge (+80%)</option>
+              </select>
+            </div>
+            <button class="demo-action-btn full" id="runDemandBtn">📦 Generate Demand Forecast</button>
+          </div>
+          <div class="demand-results" id="demandResults">
+            <div class="rec-placeholder"><span>📦</span><p>Fill in product details and click <strong>Generate</strong></p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CUSTOMER SENTIMENT DEMO MODAL ===== -->
+  <div id="sentDemoModal" class="ai-modal-overlay sent-modal-overlay" role="dialog" aria-modal="true" aria-label="Customer Sentiment Demo" hidden>
+    <div class="ai-modal">
+      <div class="ai-modal-header">
+        <div class="ai-modal-title">
+          <span class="ai-modal-icon sent-modal-icon">💬</span>
+          <div>
+            <h2>Customer Sentiment Analysis</h2>
+            <p>Live NLP &amp; Emotion Classification</p>
+          </div>
+        </div>
+        <button class="ai-modal-close" id="closeSentDemo" aria-label="Close demo">&times;</button>
+      </div>
+      <div class="ai-tabs" role="tablist">
+        <button class="ai-tab active" role="tab" data-stab="scoring" id="stab-scoring" aria-selected="true">📊 Real-time Scoring</button>
+        <button class="ai-tab" role="tab" data-stab="aggregation" id="stab-aggregation" aria-selected="false">🌐 Feedback Aggregation</button>
+        <button class="ai-tab" role="tab" data-stab="intent" id="stab-intent" aria-selected="false">🎯 Intent Classification</button>
+      </div>
+      <div class="ai-tab-panel active" id="spanel-scoring" role="tabpanel">
+        <div class="demo-desc">Type or paste a customer review below to see real-time NLP sentiment analysis.
+          <span class="api-badge"><img src="https://www.gstatic.com/devrel-devsite/prod/vc8bc2a8740c062fc8627bb577e31b69ebbe33e1efed15bc30ed4bc526d1d4d38/cloud/images/cloud-logo.svg" alt="Google Cloud" width="16" style="vertical-align:middle;margin-right:4px;"> Powered by Google Cloud NLP API</span>
+        </div>
+        <div class="sent-workspace">
+          <div class="sent-input-area">
+            <textarea id="sentText" rows="6" placeholder="e.g., I absolutely love the new dashboard features, but the mobile app keeps crashing when I try to export reports. Very frustrating!"></textarea>
+            <button class="demo-action-btn full" id="runSentBtn">🤖 Analyze Sentiment</button>
+            <div class="preset-chips">
+              <span class="p-chip" data-val="The platform is incredible. It saved our team 20 hours a week and the support team is phenomenal!">Try Positive</span>
+              <span class="p-chip" data-val="We've been waiting for a refund for 3 weeks. Terrible customer service, we are canceling our subscription.">Try Negative</span>
+              <span class="p-chip" data-val="The product does what it says. It has some good tools but the interface could be a bit cleaner. Overall it's okay.">Try Mixed/Neutral</span>
+            </div>
+          </div>
+          <div class="sent-results" id="sentResults">
+            <div class="rec-placeholder"><span>🧠</span><p>Enter text and click Analyze to view NLP insights</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="ai-tab-panel" id="spanel-aggregation" role="tabpanel" hidden>
+        <div class="demo-desc">Aggregate and visualize sentiment trends across multiple channels in real-time.</div>
+        <div class="agg-workspace">
+          <div class="agg-controls">
+            <button class="demo-action-btn full" id="simAggBtn">🔄 Sync Latest Multi-Channel Data</button>
+            <div class="agg-stat-card"><div class="asc-label">Total Mentions (24h)</div><div class="asc-val" id="ascTotal">--</div></div>
+            <div class="agg-stat-card"><div class="asc-label">Global Brand Sentiment</div><div class="asc-val" id="ascGlobal">--</div></div>
+          </div>
+          <div class="agg-charts">
+            <div class="agg-chart-card">
+              <h4>Sentiment by Channel</h4>
+              <div class="channel-bars" id="channelBars">
+                <div style="opacity:0.5; text-align:center; padding: 20px 0;">Awaiting Sync...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ai-tab-panel" id="spanel-intent" role="tabpanel" hidden>
+        <div class="demo-desc">Automatically route customer messages based on intent and urgency.
+          <span class="api-badge" style="background:rgba(255,153,0,0.1); color:#ff9900; border-color:rgba(255,153,0,0.3);">Powered by Amazon Comprehend API</span>
+        </div>
+        <div class="intent-workspace">
+          <div class="intent-stream" id="intentStream">
+            <div class="rec-placeholder" style="grid-column: 1/-1;"><span>📥</span><p>Start the Live Stream to simulate incoming support tickets</p></div>
+          </div>
+          <div class="intent-sidebar">
+            <button class="demo-action-btn full" id="startStreamBtn">▶ Start Live Ticket Stream</button>
+            <div class="intent-stats">
+              <div class="i-stat"><span id="isChurn">0</span><label>Churn Risk</label></div>
+              <div class="i-stat"><span id="isSupport">0</span><label>Tech Support</label></div>
+              <div class="i-stat"><span id="isSales">0</span><label>Sales Inquiry</label></div>
+              <div class="i-stat"><span id="isFeature">0</span><label>Feature Request</label></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== COMPETITOR ANALYSIS DEMO MODAL ===== -->
+  <div id="compDemoModal" class="ai-modal-overlay comp-modal-overlay" role="dialog" aria-modal="true" aria-label="Competitor Analysis Demo" hidden>
+    <div class="ai-modal">
+      <div class="ai-modal-header">
+        <div class="ai-modal-title">
+          <span class="ai-modal-icon comp-modal-icon">🔍</span>
+          <div>
+            <h2>Competitor Analysis</h2>
+            <p>Live Market Intelligence &amp; Benchmarking</p>
+          </div>
+        </div>
+        <button class="ai-modal-close" id="closeCompDemo" aria-label="Close demo">&times;</button>
+      </div>
+      <div class="ai-tabs" role="tablist">
+        <button class="ai-tab active" role="tab" data-ctab="market" id="ctab-market" aria-selected="true">📊 Market Share</button>
+        <button class="ai-tab" role="tab" data-ctab="bench" id="ctab-bench" aria-selected="false">⚖️ Benchmarking</button>
+        <button class="ai-tab" role="tab" data-ctab="gap" id="ctab-gap" aria-selected="false">💡 Strategic Gaps</button>
+        <button class="ai-tab" role="tab" data-ctab="map" id="ctab-map" aria-selected="false">🗺️ Nearby Stores</button>
+      </div>
+      <div class="ai-tab-panel active" id="cpanel-market" role="tabpanel">
+        <div class="demo-desc">Monitor web traffic and market share distribution across your competitive landscape.
+          <span class="api-badge" style="background:rgba(29,78,216,0.1); color:#60a5fa; border-color:rgba(29,78,216,0.3);">Powered by Similarweb API</span>
+        </div>
+        <div class="comp-workspace">
+          <div class="comp-controls">
+            <input type="text" id="compDomain" placeholder="Enter your domain (e.g. acme.com)" value="yourbrand.com" />
+            <select id="compCategory">
+              <option value="saas">B2B SaaS</option>
+              <option value="retail">E-Commerce</option>
+              <option value="fintech">FinTech</option>
+            </select>
+            <button class="demo-action-btn full" id="runMarketBtn">🌍 Analyze Market Share</button>
+          </div>
+          <div class="market-results" id="marketResults">
+            <div class="rec-placeholder"><span>🌍</span><p>Enter your domain to pull live market share data</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="ai-tab-panel" id="cpanel-bench" role="tabpanel" hidden>
+        <div class="demo-desc">Compare your product's performance across 5 key dimensions against the top 3 industry leaders.</div>
+        <div class="bench-workspace">
+          <div class="bench-chart-wrap">
+            <canvas id="benchCanvas" width="400" height="400"></canvas>
+          </div>
+          <div class="bench-legend">
+            <h4>Benchmark Legend</h4>
+            <div class="b-leg-item"><span class="bl-color" style="background:#ec4899;"></span> <strong>Your Brand</strong> (Current)</div>
+            <div class="b-leg-item"><span class="bl-color" style="background:#64748b;"></span> <strong>Industry Avg</strong></div>
+            <p style="font-size:0.75rem; color:var(--text-dim); margin-top:20px; line-height:1.4;">
+              *Scores dynamically calculated by aggregating public reviews, pricing data, and feature matrices.
+            </p>
+            <button class="demo-action-btn" id="runBenchBtn" style="margin-top:10px; width:100%;">🔄 Recalculate Benchmarks</button>
+          </div>
+        </div>
+      </div>
+      <div class="ai-tab-panel" id="cpanel-gap" role="tabpanel" hidden>
+        <div class="demo-desc">Use AI to automatically identify feature gaps and unique selling propositions (USPs) between you and a competitor.
+          <span class="api-badge" style="background:rgba(16,185,129,0.1); color:#34d399; border-color:rgba(16,185,129,0.3);">Powered by OpenAI GPT-4o</span>
+        </div>
+        <div class="gap-workspace">
+          <div class="gap-form">
+            <div class="rec-field">
+              <label>Your Primary Competitor</label>
+              <input type="text" id="gapCompetitor" placeholder="e.g. MegaCorp Inc." />
+            </div>
+            <button class="demo-action-btn full" id="runGapBtn">⚡ Identify Strategic Gaps</button>
+          </div>
+          <div class="gap-results" id="gapResults">
+            <div class="rec-placeholder"><span>⚡</span><p>Enter a competitor to generate an AI gap analysis</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="ai-tab-panel" id="cpanel-map" role="tabpanel" hidden>
+        <div class="demo-desc">BizInsight geo-maps all nearby competing stores — filter by type, view competitor ratings, and surface strategic insights instantly.</div>
+        <div class="map-module" style="margin-top:16px; padding:16px;">
+          <!-- Filter Tabs -->
+          <div class="map-filter-tabs" id="mapFilterTabs">
+            <button class="mft-btn active" data-type="all">🏪 All</button>
+            <button class="mft-btn" data-type="retail">🛍️ Retail</button>
+            <button class="mft-btn" data-type="restaurant">🍽️ Restaurant</button>
+            <button class="mft-btn" data-type="tech">💻 Tech</button>
+            <button class="mft-btn" data-type="pharmacy">💊 Pharmacy</button>
+            <button class="mft-btn" data-type="grocery">🛒 Grocery</button>
+          </div>
+          <div class="map-content">
+            <!-- Canvas Map -->
+            <div class="map-canvas-wrap">
+              <canvas id="storeMapCanvas" width="550" height="400"></canvas>
+              <div class="map-legend">
+                <span class="ml-item"><span class="ml-dot" style="background:#6366f1;"></span> Your Store</span>
+                <span class="ml-item"><span class="ml-dot" style="background:#ef4444;"></span> High Threat</span>
+                <span class="ml-item"><span class="ml-dot" style="background:#f59e0b;"></span> Medium</span>
+                <span class="ml-item"><span class="ml-dot" style="background:#10b981;"></span> Low Threat</span>
+              </div>
+              <div class="map-tooltip" id="mapTooltip"></div>
+            </div>
+            <!-- Store List + Details -->
+            <div class="map-side">
+              <div class="map-search-bar">
+                <input type="text" id="mapSearch" placeholder="Search stores..." />
+                <select id="mapSort">
+                  <option value="distance">Sort: Nearest</option>
+                  <option value="threat">Sort: Threat Level</option>
+                  <option value="rating">Sort: Rating</option>
+                </select>
+              </div>
+              <div class="store-list" id="storeList"></div>
+              <div class="store-detail-card" id="storeDetailCard" style="display:none;">
+                <div class="sdc-header">
+                  <div class="sdc-icon" id="sdcIcon">🏪</div>
+                  <div>
+                    <div class="sdc-name" id="sdcName">Store Name</div>
+                    <div class="sdc-type" id="sdcType">Category</div>
+                  </div>
+                  <button class="sdc-close" id="sdcClose">×</button>
+                </div>
+                <div class="sdc-metrics" id="sdcMetrics"></div>
+                <div class="sdc-insight" id="sdcInsight"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- ===== DATA VISUALIZATION DEMO MODAL ===== -->
+  <div id="vizDemoModal" class="ai-modal-overlay viz-modal-overlay" role="dialog" aria-modal="true" aria-label="Data Visualization Demo" hidden>
+    <div class="ai-modal">
+      <div class="ai-modal-header">
+        <div class="ai-modal-title">
+          <span class="ai-modal-icon viz-modal-icon">&#128202;</span>
+          <div>
+            <h2>Data Visualization</h2>
+            <p>Interactive charts &amp; real-time KPI dashboards</p>
+          </div>
+        </div>
+        <button class="ai-modal-close" id="closeVizDemo" aria-label="Close demo">&times;</button>
+      </div>
+      <div class="ai-tabs" role="tablist">
+        <button class="ai-tab active" role="tab" data-vtab="line" id="vtab-line" aria-selected="true">&#128200; Revenue Trend</button>
+        <button class="ai-tab" role="tab" data-vtab="bar" id="vtab-bar" aria-selected="false">&#128201; Sales by Category</button>
+        <button class="ai-tab" role="tab" data-vtab="donut" id="vtab-donut" aria-selected="false">&#127760; Market Share</button>
+        <button class="ai-tab" role="tab" data-vtab="kpi" id="vtab-kpi" aria-selected="false">&#9889; KPI Dashboard</button>
+      </div>
+
+      <!-- TAB: Revenue Trend (Line Chart) -->
+      <div class="ai-tab-panel active" id="vpanel-line" role="tabpanel">
+        <div class="demo-desc">Watch AI plot your revenue trend in real-time. Click <strong>Animate</strong> to replay the chart.</div>
+        <div class="viz-controls">
+          <select id="vizLineRange">
+            <option value="monthly">Monthly (12 months)</option>
+            <option value="quarterly">Quarterly</option>
+            <option value="weekly">Weekly (8 weeks)</option>
+          </select>
+          <button class="demo-action-btn" id="animateLineBtn">&#9654; Animate</button>
+          <span class="api-badge" style="background:rgba(16,185,129,0.1);color:#10b981;border-color:rgba(16,185,129,0.3);">Live Canvas Chart</span>
+        </div>
+        <div class="viz-canvas-wrap">
+          <canvas id="lineChartCanvas" width="700" height="300"></canvas>
+        </div>
+        <div class="viz-insight" id="lineChartInsight">
+          <span class="insight-pulse"></span>
+          <span>&#129504; AI Insight: <em>Revenue growing steadily. Peak expected in Q4 — align marketing spend accordingly.</em></span>
+        </div>
+      </div>
+
+      <!-- TAB: Sales by Category (Bar Chart) -->
+      <div class="ai-tab-panel" id="vpanel-bar" role="tabpanel">
+        <div class="demo-desc">Breakdown of sales across product categories. Toggle view between <strong>Monthly</strong> and <strong>Quarterly</strong>.</div>
+        <div class="viz-controls">
+          <select id="vizBarMode">
+            <option value="monthly">Monthly View</option>
+            <option value="quarterly">Quarterly View</option>
+          </select>
+          <button class="demo-action-btn" id="animateBarBtn">&#9654; Animate</button>
+          <span class="api-badge" style="background:rgba(6,182,212,0.1);color:#06b6d4;border-color:rgba(6,182,212,0.3);">Interactive Bar Chart</span>
+        </div>
+        <div class="viz-canvas-wrap">
+          <canvas id="barChartCanvas" width="700" height="300"></canvas>
+        </div>
+        <div class="viz-insight" id="barChartInsight">
+          <span class="insight-pulse"></span>
+          <span>&#129504; AI Insight: <em>Electronics &amp; Apparel are top revenue drivers. Consider bundling promotions.</em></span>
+        </div>
+      </div>
+
+      <!-- TAB: Market Share (Donut Chart) -->
+      <div class="ai-tab-panel" id="vpanel-donut" role="tabpanel">
+        <div class="demo-desc">Visual breakdown of market share across key competitors. Hover slices to explore.</div>
+        <div class="viz-controls">
+          <select id="vizDonutSector">
+            <option value="retail">Retail Sector</option>
+            <option value="saas">SaaS Sector</option>
+            <option value="finance">Finance Sector</option>
+          </select>
+          <button class="demo-action-btn" id="animateDonutBtn">&#9654; Animate</button>
+          <span class="api-badge" style="background:rgba(245,158,11,0.1);color:#f59e0b;border-color:rgba(245,158,11,0.3);">Donut Chart</span>
+        </div>
+        <div class="viz-donut-wrap">
+          <canvas id="donutChartCanvas" width="300" height="300"></canvas>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+        <div class="viz-insight" id="donutChartInsight">
+          <span class="insight-pulse"></span>
+          <span>&#129504; AI Insight: <em>Your brand holds 23% market share. Targeting competitor segment 2 could unlock +8% growth.</em></span>
+        </div>
+      </div>
+
+      <!-- TAB: KPI Dashboard -->
+      <div class="ai-tab-panel" id="vpanel-kpi" role="tabpanel">
+        <div class="demo-desc">Live KPI overview — metrics that matter most to your business at a glance.</div>
+        <div class="kpi-grid" id="kpiGrid">
+          <div class="kpi-card" data-target="94.7" data-suffix="%" data-label="Customer Satisfaction" data-icon="&#128522;" data-color="#10b981" data-trend="+2.3%"></div>
+          <div class="kpi-card" data-target="1.84" data-suffix="M" data-label="Monthly Revenue" data-icon="&#128176;" data-color="#6366f1" data-trend="+18.4%"></div>
+          <div class="kpi-card" data-target="3240" data-suffix="" data-label="Active Users" data-icon="&#128101;" data-color="#06b6d4" data-trend="+412"></div>
+          <div class="kpi-card" data-target="67" data-suffix="%" data-label="Conversion Rate" data-icon="&#127919;" data-color="#f59e0b" data-trend="+5.1%"></div>
+          <div class="kpi-card" data-target="12" data-suffix="ms" data-label="AI Response Time" data-icon="&#9889;" data-color="#8b5cf6" data-trend="-3ms"></div>
+          <div class="kpi-card" data-target="99.8" data-suffix="%" data-label="Uptime SLA" data-icon="&#128994;" data-color="#ec4899" data-trend="Stable"></div>
+        </div>
+        <div class="viz-insight" style="margin-top:16px;">
+          <span class="insight-pulse"></span>
+          <span>&#129504; AI Insight: <em>All KPIs are green. Revenue trending +18.4% MoM — consider scaling ad budget now.</em></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ===== SMART RECOMMENDATIONS DEMO MODAL ===== -->
+  <div id="recDemoModal" class="ai-modal-overlay rec-modal-overlay" role="dialog" aria-modal="true" aria-label="Smart Recommendations Demo" hidden>
+    <div class="ai-modal">
+      <div class="ai-modal-header">
+        <div class="ai-modal-title">
+          <span class="ai-modal-icon rec-modal-icon">&#128161;</span>
+          <div>
+            <h2>Smart Recommendations</h2>
+            <p>AI-powered strategic action plans ranked by ROI</p>
+          </div>
+        </div>
+        <button class="ai-modal-close" id="closeRecDemo" aria-label="Close demo">&times;</button>
+      </div>
+      <div class="ai-tabs" role="tablist">
+        <button class="ai-tab active" role="tab" data-rtab="generator" id="rtab-generator" aria-selected="true">&#129504; AI Generator</button>
+        <button class="ai-tab" role="tab" data-rtab="roi" id="rtab-roi" aria-selected="false">&#128200; ROI Ranking</button>
+        <button class="ai-tab" role="tab" data-rtab="plan" id="rtab-plan" aria-selected="false">&#128203; Action Plan</button>
+      </div>
+
+      <!-- TAB: AI Recommendation Generator -->
+      <div class="ai-tab-panel active" id="rpanel-generator" role="tabpanel">
+        <div class="demo-desc">Describe your business challenge and let AI generate tailored strategic recommendations instantly.</div>
+        <div class="rec-input-wrap">
+          <div class="rec-profile-row">
+            <select id="recIndustry">
+              <option value="retail">Retail / E-Commerce</option>
+              <option value="saas">B2B SaaS</option>
+              <option value="finance">Fintech / Finance</option>
+              <option value="health">Healthcare</option>
+              <option value="restaurant">Restaurant / Food</option>
+            </select>
+            <select id="recGoal">
+              <option value="revenue">Increase Revenue</option>
+              <option value="churn">Reduce Churn</option>
+              <option value="acquisition">Customer Acquisition</option>
+              <option value="cost">Cut Costs</option>
+              <option value="nps">Improve NPS</option>
+            </select>
+            <button class="demo-action-btn" id="generateRecBtn">&#9889; Generate Recommendations</button>
+          </div>
+        </div>
+        <div class="rec-output" id="recOutput">
+          <div class="rec-placeholder">
+            <span>&#129504;</span>
+            <p>Select your industry and goal, then click <strong>Generate Recommendations</strong> to get AI-powered strategic advice.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: ROI Ranking -->
+      <div class="ai-tab-panel" id="rpanel-roi" role="tabpanel">
+        <div class="demo-desc">AI ranks all strategic opportunities by expected <strong>Return on Investment</strong> — focus your energy where it counts most.</div>
+        <div class="roi-table-wrap">
+          <table class="roi-table" id="roiTable">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Opportunity</th>
+                <th>Expected ROI</th>
+                <th>Effort</th>
+                <th>Timeline</th>
+                <th>Priority</th>
+              </tr>
+            </thead>
+            <tbody id="roiTableBody"></tbody>
+          </table>
+        </div>
+        <div class="viz-insight" style="margin-top:12px;">
+          <span class="insight-pulse"></span>
+          <span>&#129504; AI Insight: <em>Top 3 opportunities alone could drive +34% revenue growth within 90 days.</em></span>
+        </div>
+      </div>
+
+      <!-- TAB: Action Plan -->
+      <div class="ai-tab-panel" id="rpanel-plan" role="tabpanel">
+        <div class="demo-desc">A ready-to-execute 30-60-90 day action plan generated by AI based on your business profile.</div>
+        <div class="action-plan-selector">
+          <select id="planIndustry">
+            <option value="retail">Retail / E-Commerce</option>
+            <option value="saas">B2B SaaS</option>
+            <option value="finance">Fintech</option>
+            <option value="restaurant">Restaurant</option>
+          </select>
+          <button class="demo-action-btn" id="generatePlanBtn">&#128203; Generate Plan</button>
+        </div>
+        <div class="action-plan-grid" id="actionPlanGrid">
+          <div class="plan-col" id="plan30">
+            <div class="plan-header plan-30"><span>&#128197;</span> Days 1-30</div>
+            <ul class="plan-tasks" id="tasks30"></ul>
+          </div>
+          <div class="plan-col" id="plan60">
+            <div class="plan-header plan-60"><span>&#128200;</span> Days 31-60</div>
+            <ul class="plan-tasks" id="tasks60"></ul>
+          </div>
+          <div class="plan-col" id="plan90">
+            <div class="plan-header plan-90"><span>&#127919;</span> Days 61-90</div>
+            <ul class="plan-tasks" id="tasks90"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button id="openCompDemoMap" style="display:none" onclick="document.getElementById('openCompDemo').click(); setTimeout(()=>document.getElementById('ctab-map').click(),50);"></button>
+
+  <script src="script.js"></script>
+  <script>
+    // ===== SIDEBAR TOGGLE =====
+    (function initSidebar() {
+      const sidebar  = document.getElementById('sidebar');
+      const toggle   = document.getElementById('sidebarToggle');
+      const overlay  = document.getElementById('sidebarOverlay');
+      const wrapper  = document.getElementById('mainWrapper');
+
+      function openSidebar() {
+        sidebar.classList.add('open');
+        overlay.classList.add('visible');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('visible');
+        document.body.style.overflow = '';
+      }
+
+      toggle.addEventListener('click', () => {
+        if (window.innerWidth <= 1024) {
+          sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+        } else {
+          // Desktop: collapse/expand sidebar
+          document.body.classList.toggle('sidebar-collapsed');
+        }
+      });
+      overlay.addEventListener('click', closeSidebar);
+
+      // Sidebar demo buttons
+      document.querySelectorAll('.sb-demo-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const modalId = btn.dataset.modal;
+          
+          if (modalId === 'vizDemoModal' && document.getElementById('openVizDemo')) {
+            document.getElementById('openVizDemo').click();
+            return;
+          }
+          if (modalId === 'recDemoModal' && document.getElementById('openRecDemo')) {
+            document.getElementById('openRecDemo').click();
+            return;
+          }
+
+          const modal = document.getElementById(modalId);
+          if (modal) {
+            modal.hidden = false;
+            document.body.style.overflow = 'hidden';
+          }
+        });
+      });
+
+      // Active sidebar item on scroll
+      const sections = document.querySelectorAll('section[id], footer');
+      const sbItems = document.querySelectorAll('.sb-item[href]');
+      window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(sec => {
+          if (window.scrollY >= sec.offsetTop - 120) current = sec.id;
+        });
+        sbItems.forEach(item => {
+          item.classList.remove('active');
+          const href = item.getAttribute('href');
+          if (href === '#' + current ||
+              (current === 'home' && href === '#home') ||
+              (href && href.includes(current))) {
+            item.classList.add('active');
+          }
+        });
+      }, { passive: true });
+
+    })();
+  </script>
+</body>
+</html>
+
+
+
+
