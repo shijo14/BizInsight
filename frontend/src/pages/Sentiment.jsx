@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import { sentimentAPI } from '../services/api'
 import {
   LineChart, Line, AreaChart, Area,
   XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -7,8 +7,6 @@ import {
   CartesianGrid, Legend
 } from 'recharts'
 import './Sentiment.css'
-
-const API = 'http://localhost:5000'
 
 const StarRating = ({ rating }) => {
   return (
@@ -77,10 +75,13 @@ export default function Sentiment() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
   const [animateBars, setAnimateBars] = useState(false)
+  const [selectedKeyword, setSelectedKeyword] = useState('')
+  const [newReviewText, setNewReviewText] = useState('')
+  const [newReviewSentiment, setNewReviewSentiment] = useState('positive')
 
   useEffect(() => {
-    axios.get(`${API}/api/sentiment`)
-      .then(r => { setData(r.data); setLoading(false); setTimeout(() => setAnimateBars(true), 100) })
+    sentimentAPI.getData()
+      .then(r => { setData(r); setLoading(false); setTimeout(() => setAnimateBars(true), 100) })
       .catch(() => setLoading(false))
   }, [])
 
@@ -93,9 +94,14 @@ export default function Sentiment() {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '28px' }}>
         <div className="page-header-left">
           <h1>Sentiment Analysis</h1>
-          <p>AI-powered customer feedback intelligence across all channels</p>
+          <p>Aggregates customer reviews from Google, Trustpilot, and G2 into a single sentiment score</p>
         </div>
         <div className="page-header-right">
+          <div className="sentiment-source-badges">
+            {['Google', 'Trustpilot', 'G2'].map(source => (
+              <span key={source} className="sentiment-source-badge">{source}</span>
+            ))}
+          </div>
           <div className="total-reviews-pill">
             <span className="reviews-dot" />
             <span>{data.overall.totalReviews.toLocaleString()} reviews analyzed</span>
@@ -231,7 +237,11 @@ export default function Sentiment() {
               const size = 0.85 + (k.count / 450) * 0.9
               const colors = { positive: '#10b981', negative: '#ef4444', neutral: '#6366f1' }
               return (
-                <div key={k.word} className="keyword-chip" style={{ fontSize: `${size}rem`, color: colors[k.sentiment], borderColor: `${colors[k.sentiment]}30`, background: `${colors[k.sentiment]}0d` }}>
+                <div key={k.word} className="keyword-chip" style={{ fontSize: `${size}rem`, color: colors[k.sentiment], borderColor: `${colors[k.sentiment]}30`, background: `${colors[k.sentiment]}0d`, cursor: 'pointer' }}
+                  onClick={() => {
+                    setSelectedKeyword(k.word)
+                    setActiveTab('reviews')
+                  }}>
                   {k.word}
                   <span className="keyword-count">{k.count}</span>
                 </div>
@@ -248,21 +258,61 @@ export default function Sentiment() {
 
       {/* Tab: Reviews */}
       {activeTab === 'reviews' && (
-        <div className="reviews-grid">
-          {data.recentReviews.map(r => (
-            <div key={r.id} className={`card review-card review-${r.sentiment}`}>
-              <div className="review-header">
-                <div className="review-avatar">{r.avatar}</div>
-                <div className="review-meta">
-                  <strong>{r.author}</strong>
-                  <span>{r.date} · {r.source}</span>
+        <div className="card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
+            <div>
+              <h3 className="card-title" style={{ margin: 0 }}>Customer Reviews</h3>
+              {selectedKeyword && (
+                <div style={{ marginTop: 8 }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>Filtering by keyword: </span>
+                  <span className="badge badge-neutral" style={{ padding: '2px 8px', fontSize: '0.8rem' }}>
+                    {selectedKeyword} <button style={{ background: 'none', border: 'none', color: 'inherit', marginLeft: 4, cursor: 'pointer' }} onClick={() => setSelectedKeyword('')}>×</button>
+                  </span>
                 </div>
-                <SentimentBadge sentiment={r.sentiment} />
-              </div>
-              <StarRating rating={r.rating} />
-              <p className="review-text">"{r.text}"</p>
+              )}
             </div>
-          ))}
+            
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <input type="text" placeholder="Write a review..." value={newReviewText} onChange={e => setNewReviewText(e.target.value)} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }} />
+              <select value={newReviewSentiment} onChange={e => setNewReviewSentiment(e.target.value)} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}>
+                <option value="positive">Positive</option>
+                <option value="neutral">Neutral</option>
+                <option value="negative">Negative</option>
+              </select>
+              <button className="btn btn-primary" onClick={() => {
+                if(!newReviewText) return;
+                const newRev = {
+                  id: Date.now(),
+                  author: 'New User',
+                  avatar: 'NU',
+                  date: 'Just now',
+                  source: 'Direct',
+                  sentiment: newReviewSentiment,
+                  rating: newReviewSentiment === 'positive' ? 5 : newReviewSentiment === 'negative' ? 1 : 3,
+                  text: newReviewText
+                };
+                setData(prev => ({...prev, recentReviews: [newRev, ...prev.recentReviews]}));
+                setNewReviewText('');
+              }}>Add</button>
+            </div>
+          </div>
+
+          <div className="reviews-grid">
+            {data.recentReviews.filter(r => !selectedKeyword || r.text.toLowerCase().includes(selectedKeyword.toLowerCase())).map(r => (
+              <div key={r.id} className={`card review-card review-${r.sentiment}`}>
+                <div className="review-header">
+                  <div className="review-avatar">{r.avatar}</div>
+                  <div className="review-meta">
+                    <strong>{r.author}</strong>
+                    <span>{r.date} · {r.source}</span>
+                  </div>
+                  <SentimentBadge sentiment={r.sentiment} />
+                </div>
+                <StarRating rating={r.rating} />
+                <p className="review-text">"{r.text}"</p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

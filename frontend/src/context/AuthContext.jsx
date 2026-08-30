@@ -1,43 +1,19 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import api from '../services/api'
 
 const AuthContext = createContext()
 
-// ── Hardcoded user store (acts like a DB for demo) ─────────────────────────
-const DEFAULT_USERS = [
-  {
-    id: 1,
-    name: 'Shijo Varghese',
-    email: 'shijo@bizinsight.io',
-    password: 'Admin@123',
-    role: 'superadmin',
-    avatar: 'SV',
-    status: 'Active',
-    joined: '2024-01-10',
-    lastActive: 'Just now',
+// ── Fallback permissions (used while DB loads or if offline) ──
+const DEFAULT_PERMISSIONS = {
+  admin: {
+    dashboard: true, analytics: true, sentiment: true, competitor: true,
+    predictions: true, liveData: true, dataSources: true, reports: true, settings: true
   },
-  {
-    id: 2,
-    name: 'Anika Sharma',
-    email: 'anika@bizinsight.io',
-    password: 'Admin@123',
-    role: 'admin',
-    avatar: 'AS',
-    status: 'Active',
-    joined: '2024-02-15',
-    lastActive: '1 hour ago',
-  },
-  {
-    id: 3,
-    name: 'Rohan Mehta',
-    email: 'rohan@bizinsight.io',
-    password: 'Admin@123',
-    role: 'admin',
-    avatar: 'RM',
-    status: 'Active',
-    joined: '2024-03-08',
-    lastActive: '3 hours ago',
-  },
-]
+  viewer: {
+    dashboard: true, analytics: false, sentiment: false, competitor: false,
+    predictions: false, liveData: true, dataSources: false, reports: false, settings: false
+  }
+}
 
 // ── Cookie helpers ──────────────────────────────────────────────────────────
 function setCookie(name, value, days = 7) {
@@ -52,63 +28,71 @@ function deleteCookie(name) {
   document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
 }
 
-// ── Load user list from localStorage, seed defaults if empty ───────────────
-function loadUsers() {
-  try {
-    const stored = localStorage.getItem('bizinsight-users')
-    if (stored) return JSON.parse(stored)
-  } catch (_) {}
-  localStorage.setItem('bizinsight-users', JSON.stringify(DEFAULT_USERS))
-  return DEFAULT_USERS
-}
-function saveUsers(users) {
-  localStorage.setItem('bizinsight-users', JSON.stringify(users))
-}
-
 export function AuthProvider({ children }) {
-  const [users, setUsersState] = useState(loadUsers)
-  const [currentUser, setCurrentUser] = useState(null)
-  const [authLoading, setAuthLoading] = useState(true)
+  const [users, setUsers]               = useState([])
+  const [permissions, setPermissions]   = useState(DEFAULT_PERMISSIONS)
+  const [currentUser, setCurrentUser]   = useState(null)
+  const [authLoading, setAuthLoading]   = useState(true)
 
-  // ── Restore session from cookie / localStorage on mount ────────────────
+  // ── Fetch users from DB ──────────────────────────────────────────────────
+  const fetchUsers = useCallback(async () => {
+    try {
+      const res = await api.get('/api/auth/users')
+      setUsers(res.data)
+    } catch (err) {
+      console.warn('[Auth] Could not fetch users from DB:', err.message)
+    }
+  }, [])
+
+  // ── Fetch permissions from DB ────────────────────────────────────────────
+  const fetchPermissions = useCallback(async () => {
+    try {
+      const res = await api.get('/api/auth/permissions')
+      if (res.data && Object.keys(res.data).length > 0) {
+        setPermissions(res.data)
+      }
+    } catch (err) {
+      console.warn('[Auth] Could not fetch permissions from DB, using defaults:', err.message)
+    }
+  }, [])
+
+  // ── Restore session on mount ─────────────────────────────────────────────
   useEffect(() => {
     const sessionRaw = getCookie('bizinsight-session') || localStorage.getItem('bizinsight-session')
     if (sessionRaw) {
       try {
         const session = JSON.parse(sessionRaw)
-        const freshUsers = loadUsers()
-        const found = freshUsers.find(u => u.id === session.id && u.email === session.email)
-        if (found) {
-          const { password: _, ...safe } = found
-          setCurrentUser(safe)
-        }
+        if (session?.id && session?.email) setCurrentUser(session)
       } catch (_) {}
     }
     setAuthLoading(false)
-  }, [])
+    fetchUsers()
+    fetchPermissions()
+  }, [fetchUsers, fetchPermissions])
 
   const persistSession = (user) => {
-    const { password: _, ...safe } = user
-    const raw = JSON.stringify(safe)
+    const raw = JSON.stringify(user)
     setCookie('bizinsight-session', raw, 7)
     localStorage.setItem('bizinsight-session', raw)
-    setCurrentUser(safe)
+    setCurrentUser(user)
   }
 
-  // ── Login ───────────────────────────────────────────────────────────────
-  const login = useCallback((email, password) => {
-    const freshUsers = loadUsers()
-    const found = freshUsers.find(
-      u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-    )
-    if (!found) return { success: false, error: 'Invalid email or password' }
-    if (found.status === 'Inactive')
-      return { success: false, error: 'This account has been deactivated' }
-    persistSession(found)
-    return { success: true, user: found }
+  // ── Login — calls real backend ───────────────────────────────────────────
+  const login = useCallback(async (email, password) => {
+    try {
+      const res = await api.post('/api/auth/login', { email, password })
+      if (res.data.success) {
+        persistSession(res.data.user)
+        return { success: true, user: res.data.user }
+      }
+      return { success: false, error: 'Login failed.' }
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Invalid email or password'
+      return { success: false, error: msg }
+    }
   }, [])
 
-  // ── Logout ──────────────────────────────────────────────────────────────
+  // ── Logout ───────────────────────────────────────────────────────────────
   const logout = useCallback(() => {
     deleteCookie('bizinsight-session')
     localStorage.removeItem('bizinsight-session')
@@ -116,53 +100,85 @@ export function AuthProvider({ children }) {
     setCurrentUser(null)
   }, [])
 
-  // ── Add admin user ──────────────────────────────────────────────────────
-  const addUser = useCallback((userData) => {
-    const fresh = loadUsers()
-    const exists = fresh.find(u => u.email.toLowerCase() === userData.email.toLowerCase())
-    if (exists) return { success: false, error: 'A user with that email already exists' }
-    const newUser = {
-      id: Date.now(),
-      name: userData.name,
-      email: userData.email,
-      password: userData.password || 'Admin@123',
-      role: userData.role || 'admin',
-      avatar: userData.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
-      status: 'Active',
-      joined: new Date().toISOString().split('T')[0],
-      lastActive: 'Just now',
+  // ── Add user — calls real backend ────────────────────────────────────────
+  const addUser = useCallback(async (userData) => {
+    try {
+      const res = await api.post('/api/auth/users', {
+        name:     userData.name,
+        email:    userData.email,
+        password: userData.password || 'Admin@123',
+        role:     userData.role || 'viewer',
+      })
+      if (res.data.success) {
+        await fetchUsers()
+        return { success: true, user: res.data.user }
+      }
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Failed to add user'
+      return { success: false, error: msg }
     }
-    const updated = [...fresh, newUser]
-    saveUsers(updated)
-    setUsersState(updated)
-    return { success: true, user: newUser }
-  }, [])
+  }, [fetchUsers])
 
-  // ── Remove user ─────────────────────────────────────────────────────────
-  const removeUser = useCallback((id) => {
-    const fresh = loadUsers()
-    const updated = fresh.filter(u => u.id !== id)
-    saveUsers(updated)
-    setUsersState(updated)
-  }, [])
+  // ── Remove user — calls real backend ────────────────────────────────────
+  const removeUser = useCallback(async (id) => {
+    try {
+      await api.delete(`/api/auth/users/${id}`)
+      await fetchUsers()
+    } catch (err) {
+      console.error('[Auth] Remove user failed:', err.message)
+    }
+  }, [fetchUsers])
 
-  // ── Toggle user status ──────────────────────────────────────────────────
-  const toggleUserStatus = useCallback((id) => {
-    const fresh = loadUsers()
-    const updated = fresh.map(u =>
-      u.id === id ? { ...u, status: u.status === 'Active' ? 'Inactive' : 'Active' } : u
-    )
-    saveUsers(updated)
-    setUsersState(updated)
-  }, [])
+  // ── Toggle user status ───────────────────────────────────────────────────
+  const toggleUserStatus = useCallback(async (id) => {
+    const user = users.find(u => u.id === id)
+    if (!user) return
+    const newStatus = user.status === 'Active' ? 'Inactive' : 'Active'
+    try {
+      await api.patch(`/api/auth/users/${id}`, { status: newStatus })
+      await fetchUsers()
+    } catch (err) {
+      console.error('[Auth] Toggle status failed:', err.message)
+    }
+  }, [users, fetchUsers])
 
-  // ── Update user role ────────────────────────────────────────────────────
-  const updateUserRole = useCallback((id, role) => {
-    const fresh = loadUsers()
-    const updated = fresh.map(u => (u.id === id ? { ...u, role } : u))
-    saveUsers(updated)
-    setUsersState(updated)
-  }, [])
+  // ── Update user role ─────────────────────────────────────────────────────
+  const updateUserRole = useCallback(async (id, role) => {
+    try {
+      await api.patch(`/api/auth/users/${id}`, { role })
+      await fetchUsers()
+      if (currentUser?.id === id) setCurrentUser(prev => ({ ...prev, role }))
+    } catch (err) {
+      console.error('[Auth] Update role failed:', err.message)
+    }
+  }, [currentUser, fetchUsers])
+
+  // ── Update user profile (local only for now) ─────────────────────────────
+  const updateUser = useCallback(async (id, updates) => {
+    if (currentUser?.id === id) setCurrentUser(prev => ({ ...prev, ...updates }))
+    await fetchUsers()
+    return { success: true }
+  }, [currentUser, fetchUsers])
+
+  // ── Update role permissions — calls real backend ─────────────────────────
+  const updateRolePermissions = useCallback(async (role, newPerms) => {
+    // Optimistically update UI
+    setPermissions(prev => ({
+      ...prev,
+      [role]: { ...prev[role], ...newPerms }
+    }))
+    // Persist each changed module to DB
+    try {
+      await Promise.all(
+        Object.entries(newPerms).map(([module, enabled]) =>
+          api.patch('/api/auth/permissions', { role, module, enabled })
+        )
+      )
+    } catch (err) {
+      console.error('[Auth] Update permissions failed:', err.message)
+      await fetchPermissions() // revert on failure
+    }
+  }, [fetchPermissions])
 
   const isAuthenticated = !!currentUser
   const isSuperAdmin   = currentUser?.role === 'superadmin'
@@ -173,13 +189,17 @@ export function AuthProvider({ children }) {
       isAuthenticated,
       isSuperAdmin,
       authLoading,
-      users: users.map(({ password: _, ...u }) => u), // never expose passwords
+      users,
+      permissions,
       login,
       logout,
       addUser,
       removeUser,
       toggleUserStatus,
       updateUserRole,
+      updateUser,
+      updateRolePermissions,
+      refreshUsers: fetchUsers,
     }}>
       {children}
     </AuthContext.Provider>

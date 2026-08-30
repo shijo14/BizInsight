@@ -1,0 +1,44 @@
+.sdg-section {
+  margin-top: 28px;
+  padding: 24px;
+}
+
+.sdg-section-header {
+  margin-bottom: 20px;
+}
+
+.sdg-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.sdg-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.sdg-icon {
+  font-size: 1.6rem;
+  margin-bottom: 10px;
+}
+
+.sdg-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.sdg-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .sdg-grid { grid-template-columns: 1fr; }
+}

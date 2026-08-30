@@ -1,19 +1,31 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useMemo } from 'react'
+import { useAuth } from './AuthContext'
 
 const RoleContext = createContext()
 
+const ROLE_LABELS = {
+  superadmin: 'Super Admin',
+  admin: 'Admin',
+  viewer: 'Standard User'
+}
+
 export function RoleProvider({ children }) {
-  const [role, setRoleState] = useState(() => localStorage.getItem('bizinsight-role') || 'superadmin')
+  const { currentUser } = useAuth()
 
-  const setRole = (r) => {
-    setRoleState(r)
-    localStorage.setItem('bizinsight-role', r)
-  }
-
-  const isSuperAdmin = role === 'superadmin'
+  const value = useMemo(() => {
+    const role = currentUser?.role || 'viewer'
+    return {
+      role,
+      roleLabel: ROLE_LABELS[role] || 'Standard User',
+      isSuperAdmin: role === 'superadmin',
+      isAdmin: role === 'admin' || role === 'superadmin',
+      isViewer: role === 'viewer',
+      setRole: () => {}
+    }
+  }, [currentUser])
 
   return (
-    <RoleContext.Provider value={{ role, setRole, isSuperAdmin }}>
+    <RoleContext.Provider value={value}>
       {children}
     </RoleContext.Provider>
   )

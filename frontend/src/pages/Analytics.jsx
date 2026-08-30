@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import {
   BarChart, Bar, LineChart, Line, AreaChart, Area,
   PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, Legend
 } from 'recharts'
+import { analyticsAPI } from '../services/api'
+import { useRole } from '../context/RoleContext'
 import './Analytics.css'
-
-const API = 'http://localhost:5000'
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -17,7 +16,7 @@ const CustomTooltip = ({ active, payload, label }) => {
         <div className="tooltip-label">{label}</div>
         {payload.map((p, i) => (
           <div key={i} style={{ color: p.color, fontSize: '0.82rem' }}>
-            {p.name}: {typeof p.value === 'number' && p.value > 1000 ? `$${p.value.toLocaleString()}` : p.value}
+            {p.name}: {typeof p.value === 'number' && p.value > 1000 ? `₹${p.value.toLocaleString('en-IN')}` : p.value}
           </div>
         ))}
       </div>
@@ -39,12 +38,50 @@ const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent
 }
 
 export default function Analytics() {
+  const { isSuperAdmin, isViewer } = useRole()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [showNarrative, setShowNarrative] = useState(false)
+  const [narrativeText, setNarrativeText] = useState('')
+  const [isEditingStory, setIsEditingStory] = useState(false)
+  const [savedStory, setSavedStory] = useState(() => localStorage.getItem('bizinsight_custom_story') || '')
+
+  const generateNarrative = () => {
+    if (!data) return
+    setShowNarrative(true)
+    setIsEditingStory(false)
+    setNarrativeText('Analyzing data streams and drafting narrative...')
+    setTimeout(() => {
+      if (savedStory) {
+        setNarrativeText(savedStory)
+        return
+      }
+
+      const rev = data.kpis.find(k => k.label.includes('Revenue')) || { value: '₹0', change: 0 }
+      const users = data.kpis.find(k => k.label.includes('Users')) || { value: '0', change: 0 }
+      
+      const story = `This month's performance has been ${rev.change > 0 ? 'outstanding' : 'challenging'}. We've seen total revenue hit ${rev.value}, which is a ${rev.change > 0 ? 'growth' : 'decline'} of ${Math.abs(rev.change)}% compared to the previous period. This correlates strongly with our active user base reaching ${users.value} (up ${users.change}%). If these traffic and conversion trends hold, we anticipate crossing our Q3 objectives well ahead of schedule. Keep an eye on the conversion funnel, as optimizations there could yield even higher margins.`
+      
+      let currentText = ''
+      let i = 0
+      const typeWriter = setInterval(() => {
+        currentText += story.charAt(i)
+        setNarrativeText(currentText)
+        i++
+        if (i === story.length) clearInterval(typeWriter)
+      }, 10)
+    }, 600)
+  }
+
+  const saveCustomStory = () => {
+    localStorage.setItem('bizinsight_custom_story', narrativeText)
+    setSavedStory(narrativeText)
+    setIsEditingStory(false)
+  }
 
   useEffect(() => {
-    axios.get(`${API}/api/analytics/detailed`)
-      .then(r => { setData(r.data); setLoading(false) })
+    analyticsAPI.getDetailed()
+      .then(r => { setData(r); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
 
@@ -58,12 +95,47 @@ export default function Analytics() {
           <h1>Analytics</h1>
           <p>Detailed performance metrics and data exploration</p>
         </div>
-        <div className="date-range-pills">
-          {['7D', '30D', '90D', 'YTD'].map((r, i) => (
-            <button key={r} className={`date-pill${i === 1 ? ' active' : ''}`}>{r}</button>
-          ))}
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button className="btn btn-primary" onClick={generateNarrative} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span>✨</span> Auto-Narrative
+          </button>
+          <div className="date-range-pills">
+            {['7D', '30D', '90D', 'YTD'].map((r, i) => (
+              <button key={r} className={`date-pill${i === 1 ? ' active' : ''}`}>{r}</button>
+            ))}
+          </div>
         </div>
       </div>
+
+      {showNarrative && (
+        <div className="card" style={{ marginBottom: 24, background: 'var(--grad)', color: '#fff', border: 'none' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: '1.2rem' }}>📖</span> Data Story
+            </h3>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {!isViewer && (
+                <button onClick={() => setIsEditingStory(!isEditingStory)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>
+                  {isEditingStory ? 'Cancel' : '✎ Edit'}
+                </button>
+              )}
+              <button onClick={() => setShowNarrative(false)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '1.2rem', padding: '0 4px' }}>✕</button>
+            </div>
+          </div>
+          {isEditingStory ? (
+            <div>
+              <textarea 
+                value={narrativeText} 
+                onChange={e => setNarrativeText(e.target.value)} 
+                style={{ width: '100%', height: '100px', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(0,0,0,0.2)', color: '#fff', fontSize: '0.95rem', fontFamily: 'inherit', resize: 'vertical' }}
+              />
+              <button onClick={saveCustomStory} className="btn btn-primary" style={{ marginTop: '10px', background: '#10b981', color: '#fff', border: 'none' }}>Save Story</button>
+            </div>
+          ) : (
+            <p style={{ lineHeight: 1.6, fontSize: '0.95rem' }}>{narrativeText}</p>
+          )}
+        </div>
+      )}
 
       {/* KPI Grid */}
       <div className="analytics-kpi-grid">
@@ -97,7 +169,7 @@ export default function Analytics() {
             <BarChart data={data.revenueByMonth} barSize={22} barGap={4}>
               <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
               <XAxis dataKey="month" stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} />
-              <YAxis stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
+              <YAxis stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `₹${(v/100000).toFixed(0)}L`} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="revenue"  name="Revenue"  fill="#6366f1" radius={[4,4,0,0]} />
               <Bar dataKey="expenses" name="Expenses" fill="#ef4444" radius={[4,4,0,0]} opacity={0.7} />

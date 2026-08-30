@@ -69,6 +69,7 @@ function AddUserModal({ onClose, onAdd }) {
           <div className="mf-group">
             <label>Role</label>
             <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
+              <option value="viewer">Viewer — Limited access</option>
               <option value="admin">Admin — Analytics & module access</option>
               <option value="superadmin">Super Admin — Full system access</option>
             </select>
@@ -89,7 +90,7 @@ function AddUserModal({ onClose, onAdd }) {
 }
 
 export default function AdminPanel() {
-  const { users, addUser, removeUser, toggleUserStatus, updateUserRole, currentUser } = useAuth()
+  const { users, addUser, removeUser, toggleUserStatus, updateUserRole, currentUser, permissions, updateRolePermissions } = useAuth()
   const [stats, setStats]       = useState(null)
   const [loading, setLoading]   = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -125,7 +126,6 @@ export default function AdminPanel() {
   }
 
   const handleRoleChange = (id, newRole, name) => {
-    if (id === currentUser?.id) { showToast('❌ Cannot change your own role here', 'error'); return }
     updateUserRole(id, newRole)
     showToast(`🔄 ${name} is now ${newRole === 'superadmin' ? 'Super Admin' : 'Admin'}`)
   }
@@ -198,13 +198,13 @@ export default function AdminPanel() {
 
       {/* Tabs */}
       <div className="admin-tabs">
-        {['users', 'modules', 'activity'].map(tab => (
+        {['users', 'modules', 'activity', 'permissions'].map(tab => (
           <button
             key={tab}
             className={`admin-tab ${activeTab === tab ? 'active' : ''}`}
             onClick={() => setActiveTab(tab)}
           >
-            {tab === 'users' ? `👥 Users (${users.length})` : tab === 'modules' ? '⚙️ Active Modules' : '📋 Activity Log'}
+            {tab === 'users' ? `👥 Users (${users.length})` : tab === 'modules' ? '⚙️ Active Modules' : tab === 'permissions' ? '🔐 Permissions' : '📋 Activity Log'}
           </button>
         ))}
       </div>
@@ -244,6 +244,7 @@ export default function AdminPanel() {
                         onChange={e => handleRoleChange(u.id, e.target.value, u.name)}
                         disabled={u.id === currentUser?.id}
                       >
+                        <option value="viewer">Viewer</option>
                         <option value="admin">Admin</option>
                         <option value="superadmin">Super Admin</option>
                       </select>
@@ -317,6 +318,46 @@ export default function AdminPanel() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── PERMISSIONS TAB ── */}
+      {activeTab === 'permissions' && (
+        <div className="card admin-card">
+          <div className="permissions-container">
+            <h3 style={{ marginBottom: '1rem', color: 'var(--text)' }}>Role-Based Access Control</h3>
+            <p style={{ marginBottom: '2rem', color: 'var(--text-dim)', fontSize: '0.9rem' }}>
+              Configure which modules are accessible by Admins and Viewers. Super Admins always have access to everything.
+            </p>
+            
+            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+              {['admin', 'viewer'].map(role => (
+                <div key={role} style={{ flex: '1 1 300px', background: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                  <h4 style={{ textTransform: 'capitalize', marginBottom: '1rem', color: 'var(--text)', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>
+                    {role === 'viewer' ? 'Viewer (Standard User)' : 'Admin'} Role
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    {Object.keys(permissions[role] || {}).map(module => (
+                      <label key={module} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+                        <span style={{ textTransform: 'capitalize', color: 'var(--text-muted)' }}>
+                          {module.replace(/([A-Z])/g, ' $1').trim()}
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={permissions[role][module]}
+                          onChange={(e) => {
+                            updateRolePermissions(role, { [module]: e.target.checked });
+                            showToast(`Updated ${module} permission for ${role}`);
+                          }}
+                          style={{ cursor: 'pointer', width: '18px', height: '18px', accentColor: 'var(--primary)' }}
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

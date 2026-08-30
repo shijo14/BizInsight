@@ -354,8 +354,8 @@
 @keyframes fadeOverlay { from { opacity:0; } to { opacity:1; } }
 
 .modal-box {
-  background: #0f172a;
-  border: 1px solid rgba(99,102,241,0.25);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 18px;
   width: min(500px, 100%);
   padding: 32px;
@@ -392,8 +392,8 @@
 .mf-group input,
 .mf-group select {
   padding: 10px 14px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--bg2);
+  border: 1px solid var(--border);
   border-radius: 9px;
   color: var(--text);
   font-size: 0.9rem;
@@ -455,3 +455,13 @@
   animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 600px) {
+  .admin-tabs { width: 100%; }
+  .admin-tab { flex: 1; text-align: center; padding: 8px 10px; }
+  .user-table th,
+  .user-table td { padding: 10px 10px; font-size: 0.82rem; }
+  .add-user-btn { width: 100%; text-align: center; }
+  .page-header { gap: 10px; }
+  .action-btn { width: 28px; height: 28px; }
+}

@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useAuth } from '../context/AuthContext'
+import { useRole } from '../context/RoleContext'
+import { companyAPI } from '../services/api'
 import './Settings.css'
 
-const SECTIONS = ['Profile', 'Notifications', 'Integrations', 'Security', 'Billing']
+const SECTIONS = ['Profile', 'Company', 'Notifications', 'Integrations', 'Security', 'Billing']
 
 const Toggle = ({ checked, onChange }) => (
   <div className={`toggle${checked ? ' on' : ''}`} onClick={() => onChange(!checked)}>
@@ -10,15 +13,32 @@ const Toggle = ({ checked, onChange }) => (
 )
 
 export default function Settings() {
+  const { currentUser, updateUser } = useAuth()
+  const { setRole } = useRole()
   const [activeSection, setActiveSection] = useState('Profile')
+  const [saved, setSaved] = useState(false)
+
   const [profile, setProfile] = useState({
-    name: 'Shijo Varghese',
-    email: 'shijo@bizinsight.io',
-    company: 'BizInsight Inc.',
-    role: 'Admin',
-    timezone: 'Asia/Kolkata',
-    language: 'English'
+    name:     currentUser?.name     || '',
+    email:    currentUser?.email    || '',
+    company:  currentUser?.company  || 'BizInsight Inc.',
+    role:     currentUser?.role     || 'admin',
+    timezone: currentUser?.timezone || 'Asia/Kolkata',
+    language: currentUser?.language || 'English'
   })
+
+  // Sync profile if currentUser changes (e.g. after role change from admin panel)
+  useEffect(() => {
+    if (currentUser) {
+      setProfile(p => ({
+        ...p,
+        name:  currentUser.name  || p.name,
+        email: currentUser.email || p.email,
+        role:  currentUser.role  || p.role,
+      }))
+    }
+  }, [currentUser])
+
   const [notifications, setNotifications] = useState({
     weeklyReport:    true,
     anomalyAlerts:   true,
@@ -27,25 +47,81 @@ export default function Settings() {
     productUpdates:  true,
     marketingEmails: false
   })
-  const [security, setSecurity] = useState({
-    twoFactor: false,
-    sessionLog: true
+  const [senderEmail, setSenderEmail] = useState(() => {
+    return localStorage.getItem('bizinsight_sender_email') || 'noreply@bizinsight.com'
   })
-  const [saved, setSaved] = useState(false)
+  const [security, setSecurity] = useState({ twoFactor: false, sessionLog: true })
+
+  const [company, setCompany] = useState({
+    company_name: '', industry: '', headquarters: '', description: '',
+    base_revenue: 0, base_users: 0, currency: 'INR', competitors: '', market_segment: '', brandColor: '#6366f1'
+  })
+  const [loadingCompany, setLoadingCompany] = useState(false)
+
+  const [paymentMethod, setPaymentMethod] = useState({ card: '4242', exp: '12/2027', brand: '💳' })
+  const [editingPayment, setEditingPayment] = useState(false)
+  const [newPayment, setNewPayment] = useState({ card: '', exp: '' })
+
+  // Fetch company data when visiting company tab
+  useEffect(() => {
+    if (activeSection === 'Company') {
+      setLoadingCompany(true)
+      companyAPI.getProfile().then(data => {
+        if (data) {
+          setCompany({
+            ...data,
+            competitors: data.competitors ? data.competitors.join(', ') : ''
+          })
+        }
+      }).catch(err => console.error(err))
+      .finally(() => setLoadingCompany(false))
+    }
+  }, [activeSection])
+
+  const handleSaveCompany = async () => {
+    try {
+      const payload = {
+        ...company,
+        competitors: company.competitors.split(',').map(s => s.trim()).filter(Boolean)
+      }
+      await companyAPI.updateProfile(payload)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2500)
+    } catch (err) {
+      console.error('Failed to save company profile', err)
+    }
+  }
 
   const handleSave = () => {
+    if (currentUser) {
+      updateUser(currentUser.id, {
+        name:     profile.name,
+        email:    profile.email,
+        company:  profile.company,
+        role:     profile.role,
+        timezone: profile.timezone,
+        language: profile.language,
+      })
+      // Also sync the mock role in the topbar
+      setRole(profile.role)
+    }
+    localStorage.setItem('bizinsight_sender_email', senderEmail)
     setSaved(true)
     setTimeout(() => setSaved(false), 2500)
   }
 
-  const integrations = [
-    { name: 'Google Analytics', icon: '📊', desc: 'Import web traffic and conversion data', connected: true,  color: '#f59e0b' },
-    { name: 'Slack',            icon: '💬', desc: 'Receive real-time alerts in your workspace', connected: true,  color: '#6366f1' },
-    { name: 'HubSpot CRM',     icon: '🔗', desc: 'Sync customer data and deal pipeline', connected: false, color: '#ef4444' },
-    { name: 'Stripe',           icon: '💳', desc: 'Pull revenue and subscription metrics', connected: false, color: '#10b981' },
-    { name: 'Zapier',           icon: '⚡', desc: 'Automate workflows with 5000+ apps', connected: true,  color: '#f97316' },
-    { name: 'Salesforce',       icon: '☁️', desc: 'Sync leads, contacts, and opportunities', connected: false, color: '#06b6d4' },
-  ]
+  const [integrationsList, setIntegrationsList] = useState([
+    { name: 'Google Analytics', icon: '📊', desc: 'Import web traffic and conversion data',      connected: true,  color: '#f59e0b' },
+    { name: 'Slack',            icon: '💬', desc: 'Receive real-time alerts in your workspace',  connected: true,  color: '#6366f1' },
+    { name: 'HubSpot CRM',     icon: '🔗', desc: 'Sync customer data and deal pipeline',         connected: false, color: '#ef4444' },
+    { name: 'Stripe',           icon: '💳', desc: 'Pull revenue and subscription metrics',        connected: false, color: '#10b981' },
+    { name: 'Zapier',           icon: '⚡', desc: 'Automate workflows with 5000+ apps',           connected: true,  color: '#f97316' },
+    { name: 'Salesforce',       icon: '☁️', desc: 'Sync leads, contacts, and opportunities',     connected: false, color: '#06b6d4' },
+  ])
+
+  const toggleIntegration = (name) => {
+    setIntegrationsList(prev => prev.map(int => int.name === name ? { ...int, connected: !int.connected } : int))
+  }
 
   return (
     <div className="settings">
@@ -69,7 +145,7 @@ export default function Settings() {
               onClick={() => setActiveSection(s)}
             >
               <span className="settings-nav-icon">
-                {{ Profile: '👤', Notifications: '🔔', Integrations: '🔌', Security: '🔒', Billing: '💳' }[s]}
+                {{ Profile: '👤', Company: '🏢', Notifications: '🔔', Integrations: '🔌', Security: '🔒', Billing: '💳' }[s]}
               </span>
               {s}
             </button>
@@ -89,7 +165,9 @@ export default function Settings() {
 
               {/* Avatar */}
               <div className="profile-avatar-row">
-                <div className="settings-avatar">SV</div>
+                <div className="settings-avatar">
+                  {currentUser?.avatar || currentUser?.name?.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() || 'BZ'}
+                </div>
                 <div>
                   <button className="btn btn-ghost" style={{ marginRight: 10 }}>Upload Photo</button>
                   <button className="btn btn-ghost">Remove</button>
@@ -104,7 +182,7 @@ export default function Settings() {
                 </div>
                 <div className="form-group">
                   <label>Email Address</label>
-                  <input className="form-input" value={profile.email} onChange={e => setProfile({...profile, email: e.target.value})} />
+                  <input className="form-input" type="email" value={profile.email} onChange={e => setProfile({...profile, email: e.target.value})} />
                 </div>
                 <div className="form-group">
                   <label>Company</label>
@@ -113,9 +191,10 @@ export default function Settings() {
                 <div className="form-group">
                   <label>Role</label>
                   <select className="form-input" value={profile.role} onChange={e => setProfile({...profile, role: e.target.value})}>
-                    <option>Admin</option>
-                    <option>Analyst</option>
-                    <option>Viewer</option>
+                    <option value="admin">Admin</option>
+                    <option value="superadmin">Super Admin</option>
+                    <option value="analyst">Analyst</option>
+                    <option value="viewer">Viewer</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -140,8 +219,101 @@ export default function Settings() {
 
               <div className="settings-actions">
                 <button className="btn btn-primary" onClick={handleSave}>Save Changes</button>
-                <button className="btn btn-ghost">Cancel</button>
+                <button className="btn btn-ghost" onClick={() => setProfile({
+                  name: currentUser?.name || '', email: currentUser?.email || '',
+                  company: currentUser?.company || 'BizInsight Inc.', role: currentUser?.role || 'admin',
+                  timezone: 'Asia/Kolkata', language: 'English'
+                })}>Reset</button>
               </div>
+            </div>
+          )}
+
+          {/* ── Company Profile ── */}
+          {activeSection === 'Company' && (
+            <div className="settings-panel">
+              <div className="settings-section-header">
+                <h2>Company Profile</h2>
+                <p>Configure the foundational business data used across analytics and benchmarking</p>
+              </div>
+
+              {loadingCompany ? (
+                <div style={{ padding: '20px', color: 'var(--text-dim)' }}>Loading company profile...</div>
+              ) : (
+                <>
+                  <div className="settings-form-grid">
+                    <div className="form-group">
+                      <label>Company Name</label>
+                      <input className="form-input" value={company.company_name} onChange={e => setCompany({...company, company_name: e.target.value})} placeholder="e.g. Nike" />
+                    </div>
+                    <div className="form-group">
+                      <label>Industry</label>
+                      <input className="form-input" value={company.industry} onChange={e => setCompany({...company, industry: e.target.value})} placeholder="e.g. Retail / E-commerce" />
+                    </div>
+                    <div className="form-group">
+                      <label>Headquarters</label>
+                      <input className="form-input" value={company.headquarters} onChange={e => setCompany({...company, headquarters: e.target.value})} placeholder="e.g. Beaverton, Oregon" />
+                    </div>
+                    <div className="form-group">
+                      <label>Market Segment</label>
+                      <select className="form-input" value={company.market_segment} onChange={e => setCompany({...company, market_segment: e.target.value})}>
+                        <option value="B2B">B2B</option>
+                        <option value="B2C">B2C</option>
+                        <option value="B2B2C">B2B2C</option>
+                        <option value="D2C">D2C (Direct to Consumer)</option>
+                      </select>
+                    </div>
+                    <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                      <label>Company Description</label>
+                      <textarea className="form-input" rows="3" value={company.description || ''} onChange={e => setCompany({...company, description: e.target.value})} placeholder="Brief description of the business model and products..."></textarea>
+                    </div>
+                    
+                    <div className="form-group" style={{ gridColumn: '1 / -1', padding: '16px', background: 'rgba(99,102,241,0.05)', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.2)' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>🎨 Primary Brand Color (White-Labeling)</label>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginBottom: '12px' }}>This color will be dynamically applied to all buttons, tabs, and charts to match your brand.</p>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        <input type="color" value={company.brandColor || '#6366f1'} onChange={e => {
+                          const color = e.target.value;
+                          setCompany({...company, brandColor: color});
+                          document.documentElement.style.setProperty('--accent', color);
+                          document.documentElement.style.setProperty('--primary', color);
+                          localStorage.setItem('bizinsight_brand_color', color);
+                        }} style={{ width: '50px', height: '40px', padding: '0', border: 'none', borderRadius: '4px', cursor: 'pointer' }} />
+                        <span style={{ fontFamily: 'monospace', color: 'var(--text-dim)' }}>{company.brandColor || '#6366f1'}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>Base Revenue (Annual)</label>
+                      <input className="form-input" type="number" value={company.base_revenue} onChange={e => setCompany({...company, base_revenue: e.target.value})} />
+                    </div>
+                    <div className="form-group">
+                      <label>Currency</label>
+                      <select className="form-input" value={company.currency} onChange={e => setCompany({...company, currency: e.target.value})}>
+                        <option value="INR">INR (₹)</option>
+                        <option value="USD">USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="GBP">GBP (£)</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Active Users / Customers Base</label>
+                      <input className="form-input" type="number" value={company.base_users} onChange={e => setCompany({...company, base_users: e.target.value})} />
+                    </div>
+                    
+                    <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                      <label>Key Competitors (comma separated)</label>
+                      <input className="form-input" value={company.competitors} onChange={e => setCompany({...company, competitors: e.target.value})} placeholder="e.g. Adidas, Puma, Under Armour" />
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '4px' }}>These will be automatically benchmarked in the Competitor Analysis module.</p>
+                    </div>
+                  </div>
+
+                  <div className="settings-actions">
+                    <button className="btn btn-primary" onClick={handleSaveCompany} disabled={currentUser?.role === 'viewer'}>
+                      {currentUser?.role === 'viewer' ? 'Read Only' : 'Save Company Profile'}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
@@ -152,14 +324,27 @@ export default function Settings() {
                 <h2>Notification Preferences</h2>
                 <p>Choose what alerts and updates you receive</p>
               </div>
+
+              <div className="form-group" style={{ marginBottom: '24px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>Outgoing Sender Email 📨</label>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginBottom: '12px' }}>This email will be used as the sender address for all scheduled automated reports.</p>
+                <input 
+                  type="email" 
+                  value={senderEmail} 
+                  onChange={e => setSenderEmail(e.target.value)} 
+                  placeholder="e.g. alerts@mycompany.com"
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text)' }}
+                />
+              </div>
+
               <div className="toggle-list">
                 {[
-                  { key: 'weeklyReport',    label: 'Weekly Performance Report',   desc: 'Delivered every Monday at 9AM' },
-                  { key: 'anomalyAlerts',   label: 'Anomaly Detection Alerts',    desc: 'Instant notification when unusual patterns are detected' },
-                  { key: 'sentimentDrop',   label: 'Sentiment Score Drop',        desc: 'Alert when overall sentiment drops below threshold' },
-                  { key: 'competitorMove',  label: 'Competitor Market Movements', desc: 'Get notified of significant competitor changes' },
-                  { key: 'productUpdates',  label: 'Product Updates',             desc: 'New features and improvements to BizInsight' },
-                  { key: 'marketingEmails', label: 'Marketing Emails',            desc: 'Tips, case studies, and industry insights' },
+                  { key: 'weeklyReport',    label: 'Weekly Performance Report',    desc: 'Delivered every Monday at 9AM' },
+                  { key: 'anomalyAlerts',   label: 'Anomaly Detection Alerts',     desc: 'Instant notification when unusual patterns are detected' },
+                  { key: 'sentimentDrop',   label: 'Sentiment Score Drop',         desc: 'Alert when overall sentiment drops below threshold' },
+                  { key: 'competitorMove',  label: 'Competitor Market Movements',  desc: 'Get notified of significant competitor changes' },
+                  { key: 'productUpdates',  label: 'Product Updates',              desc: 'New features and improvements to BizInsight' },
+                  { key: 'marketingEmails', label: 'Marketing Emails',             desc: 'Tips, case studies, and industry insights' },
                 ].map(n => (
                   <div key={n.key} className="toggle-row">
                     <div className="toggle-info">
@@ -186,9 +371,9 @@ export default function Settings() {
                 <h2>Integrations</h2>
                 <p>Connect your favorite tools to supercharge BizInsight</p>
               </div>
-              <div className="integrations-grid">
-                {integrations.map(int => (
-                  <div key={int.name} className={`integration-card${int.connected ? ' connected' : ''}`}>
+              <div className="settings-integrations-grid">
+                {integrationsList.map(int => (
+                  <div key={int.name} className={`settings-integration-card${int.connected ? ' connected' : ''}`}>
                     <div className="int-icon" style={{ background: `${int.color}18`, color: int.color }}>{int.icon}</div>
                     <div className="int-info">
                       <div className="int-name">{int.name}</div>
@@ -196,8 +381,8 @@ export default function Settings() {
                     </div>
                     <div className="int-actions">
                       {int.connected
-                        ? <><span className="int-badge-connected">● Connected</span><button className="btn btn-ghost" style={{fontSize:'0.78rem',padding:'6px 14px'}}>Disconnect</button></>
-                        : <button className="btn btn-primary" style={{fontSize:'0.78rem',padding:'6px 16px'}}>Connect</button>
+                        ? <><span className="int-badge-connected">● Connected</span><button className="btn btn-ghost" style={{fontSize:'0.78rem',padding:'6px 14px'}} onClick={() => toggleIntegration(int.name)}>Disconnect</button></>
+                        : <button className="btn btn-primary" style={{fontSize:'0.78rem',padding:'6px 16px'}} onClick={() => toggleIntegration(int.name)}>Connect</button>
                       }
                     </div>
                   </div>
@@ -218,7 +403,7 @@ export default function Settings() {
                 <div className="security-row">
                   <div>
                     <div className="security-label">Two-Factor Authentication</div>
-                    <div className="security-desc">Add an extra layer of protection to your account via authenticator app</div>
+                    <div className="security-desc">Add an extra layer of protection via authenticator app</div>
                   </div>
                   <Toggle checked={security.twoFactor} onChange={v => setSecurity({...security, twoFactor: v})} />
                 </div>
@@ -264,7 +449,7 @@ export default function Settings() {
           {activeSection === 'Billing' && (
             <div className="settings-panel">
               <div className="settings-section-header">
-                <h2>Billing & Plan</h2>
+                <h2>Billing &amp; Plan</h2>
                 <p>Manage your subscription and payment methods</p>
               </div>
 
@@ -287,15 +472,32 @@ export default function Settings() {
                 <h3 style={{fontSize:'1rem',fontWeight:600}}>Payment Method</h3>
               </div>
               <div className="payment-card card">
-                <div className="payment-row">
-                  <div className="card-brand">💳</div>
-                  <div>
-                    <div className="payment-num">•••• •••• •••• 4242</div>
-                    <div className="payment-exp">Expires 12/2027</div>
+                {editingPayment ? (
+                  <div style={{ padding: '20px 24px', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <input className="form-input" placeholder="Card Number (16 digits)" value={newPayment.card} onChange={e => setNewPayment({...newPayment, card: e.target.value})} style={{flex: 1, minWidth: '200px'}} maxLength="16" />
+                    <input className="form-input" placeholder="MM/YY" value={newPayment.exp} onChange={e => setNewPayment({...newPayment, exp: e.target.value})} style={{width: '100px'}} maxLength="7" />
+                    <button className="btn btn-primary" onClick={() => {
+                      if (newPayment.card && newPayment.exp) {
+                        setPaymentMethod({ card: newPayment.card.slice(-4), exp: newPayment.exp, brand: '💳' });
+                      }
+                      setEditingPayment(false);
+                    }}>Save</button>
+                    <button className="btn btn-ghost" onClick={() => setEditingPayment(false)}>Cancel</button>
                   </div>
-                  <span className="int-badge-connected">● Default</span>
-                  <button className="btn btn-ghost" style={{fontSize:'0.78rem',padding:'6px 14px'}}>Update</button>
-                </div>
+                ) : (
+                  <div className="payment-row">
+                    <div className="card-brand">{paymentMethod.brand}</div>
+                    <div>
+                      <div className="payment-num">•••• •••• •••• {paymentMethod.card}</div>
+                      <div className="payment-exp">Expires {paymentMethod.exp}</div>
+                    </div>
+                    <span className="int-badge-connected">● Default</span>
+                    <button className="btn btn-ghost" style={{fontSize:'0.78rem',padding:'6px 14px'}} onClick={() => {
+                      setNewPayment({ card: '', exp: '' });
+                      setEditingPayment(true);
+                    }}>Update</button>
+                  </div>
+                )}
               </div>
 
               <div className="settings-section-header" style={{ marginTop: 28 }}>
@@ -305,19 +507,15 @@ export default function Settings() {
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>Date</th>
-                      <th>Description</th>
-                      <th>Amount</th>
-                      <th>Status</th>
-                      <th>Receipt</th>
+                      <th>Date</th><th>Description</th><th>Amount</th><th>Status</th><th>Receipt</th>
                     </tr>
                   </thead>
                   <tbody>
                     {[
-                      { date: 'May 1, 2026',  desc: 'Pro Plan - Monthly',  amount: '$99.00', status: 'Paid' },
-                      { date: 'Apr 1, 2026',  desc: 'Pro Plan - Monthly',  amount: '$99.00', status: 'Paid' },
-                      { date: 'Mar 1, 2026',  desc: 'Pro Plan - Monthly',  amount: '$99.00', status: 'Paid' },
-                      { date: 'Feb 1, 2026',  desc: 'Pro Plan - Monthly',  amount: '$99.00', status: 'Paid' },
+                      { date: 'May 1, 2026', desc: 'Pro Plan - Monthly', amount: '$99.00', status: 'Paid' },
+                      { date: 'Apr 1, 2026', desc: 'Pro Plan - Monthly', amount: '$99.00', status: 'Paid' },
+                      { date: 'Mar 1, 2026', desc: 'Pro Plan - Monthly', amount: '$99.00', status: 'Paid' },
+                      { date: 'Feb 1, 2026', desc: 'Pro Plan - Monthly', amount: '$99.00', status: 'Paid' },
                     ].map((inv, i) => (
                       <tr key={i}>
                         <td>{inv.date}</td>

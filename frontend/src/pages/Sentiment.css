@@ -64,7 +64,30 @@
 }
 
 /* Header */
-.page-header-right {}
+.page-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.sentiment-source-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.sentiment-source-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: #a5b4fc;
+}
+
 .total-reviews-pill {
   display: flex;
   align-items: center;
@@ -202,4 +225,17 @@
   .sentiment-kpi-row { grid-template-columns: 1fr 1fr; }
   .sent-gauge-card { grid-column: span 2; }
   .reviews-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+  .sentiment-kpi-row { grid-template-columns: 1fr; }
+  .sent-gauge-card { grid-column: unset; }
+  .page-tabs { flex-wrap: wrap; width: 100%; }
+  .tab-btn { flex: 1; text-align: center; }
+}
+@media (max-width: 600px) {
+  .sent-kpi-value { font-size: 1.6rem; }
+  .gauge-svg { width: 140px; height: 80px; }
+  .gauge-score { font-size: 2rem; }
+  .category-name { width: 90px; font-size: 0.78rem; }
+  .keyword-chip { padding: 6px 12px; font-size: 0.82rem; }
 }

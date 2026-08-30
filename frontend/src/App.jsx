@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
-import { RoleProvider } from './context/RoleContext'
+import { RoleProvider, useRole } from './context/RoleContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
@@ -14,12 +14,16 @@ import Settings from './pages/Settings'
 import LiveData from './pages/LiveData'
 import AdminPanel from './pages/AdminPanel'
 import Reports from './pages/Reports'
+import DataSources from './pages/DataSources'
 import Login from './pages/Login'
-import BizBot from './components/BizBot'
+import Chatbot from './components/Chatbot'
+import OfflineBanner from './components/OfflineBanner'
+import Financials from './pages/Financials'
 
 // ── Protected route wrapper ────────────────────────────────────────────────
-function ProtectedRoute({ children, requireSuperAdmin = false }) {
-  const { isAuthenticated, isSuperAdmin, authLoading } = useAuth()
+function ProtectedRoute({ children, requireSuperAdmin = false, viewerRestricted = false, module = null }) {
+  const { isAuthenticated, authLoading, permissions, currentUser } = useAuth()
+  const { isSuperAdmin, isViewer } = useRole()
 
   if (authLoading) {
     return (
@@ -41,6 +45,16 @@ function ProtectedRoute({ children, requireSuperAdmin = false }) {
 
   if (!isAuthenticated) return <Navigate to="/login" replace />
   if (requireSuperAdmin && !isSuperAdmin) return <Navigate to="/dashboard" replace />
+  
+  const role = currentUser?.role || 'viewer'
+  if (module && !isSuperAdmin) {
+    if (!permissions[role]?.[module]) {
+      return <Navigate to="/dashboard" replace />
+    }
+  } else if (viewerRestricted && isViewer) {
+    return <Navigate to="/dashboard" replace />
+  }
+  
   return children
 }
 
@@ -49,7 +63,15 @@ function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768)
   const { isAuthenticated } = useAuth()
 
-  if (!isAuthenticated) return null
+  useEffect(() => {
+    const savedColor = localStorage.getItem('bizinsight_brand_color')
+    if (savedColor) {
+      document.documentElement.style.setProperty('--accent', savedColor)
+      document.documentElement.style.setProperty('--primary', savedColor)
+    }
+  }, [])
+
+  if (!isAuthenticated) return <Navigate to="/login" replace />
 
   return (
     <div className="app-layout">
@@ -59,23 +81,26 @@ function AppLayout() {
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           sidebarOpen={sidebarOpen}
         />
+        <OfflineBanner />
         <div className="page-body">
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard"   element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/analytics"   element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-            <Route path="/sentiment"   element={<ProtectedRoute><Sentiment /></ProtectedRoute>} />
-            <Route path="/competitor"  element={<ProtectedRoute><Competitor /></ProtectedRoute>} />
-            <Route path="/predictions" element={<ProtectedRoute><Predictions /></ProtectedRoute>} />
-            <Route path="/settings"    element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/live-data"   element={<ProtectedRoute><LiveData /></ProtectedRoute>} />
-            <Route path="/reports"     element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+            <Route path="/dashboard"   element={<ProtectedRoute module="dashboard"><Dashboard /></ProtectedRoute>} />
+            <Route path="/financials"  element={<ProtectedRoute><Financials /></ProtectedRoute>} />
+            <Route path="/analytics"   element={<ProtectedRoute module="analytics"><Analytics /></ProtectedRoute>} />
+            <Route path="/sentiment"   element={<ProtectedRoute module="sentiment"><Sentiment /></ProtectedRoute>} />
+            <Route path="/competitor"  element={<ProtectedRoute module="competitor"><Competitor /></ProtectedRoute>} />
+            <Route path="/predictions" element={<ProtectedRoute module="predictions"><Predictions /></ProtectedRoute>} />
+            <Route path="/settings"    element={<ProtectedRoute module="settings" viewerRestricted><Settings /></ProtectedRoute>} />
+            <Route path="/live-data"   element={<ProtectedRoute module="liveData"><LiveData /></ProtectedRoute>} />
+            <Route path="/data-sources" element={<ProtectedRoute module="dataSources"><DataSources /></ProtectedRoute>} />
+            <Route path="/reports"     element={<ProtectedRoute module="reports"><Reports /></ProtectedRoute>} />
             <Route path="/admin"       element={<ProtectedRoute requireSuperAdmin><AdminPanel /></ProtectedRoute>} />
             <Route path="*"            element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </div>
       </div>
-      <BizBot />
+      <Chatbot />
     </div>
   )
 }
@@ -113,13 +138,13 @@ function RootRouter() {
 export default function App() {
   return (
     <ThemeProvider>
-      <RoleProvider>
-        <AuthProvider>
+      <AuthProvider>
+        <RoleProvider>
           <BrowserRouter>
             <RootRouter />
           </BrowserRouter>
-        </AuthProvider>
-      </RoleProvider>
+        </RoleProvider>
+      </AuthProvider>
     </ThemeProvider>
   )
 }

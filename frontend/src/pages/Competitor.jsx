@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import { competitorAPI } from '../services/api'
 import {
   LineChart, Line, RadarChart, Radar, PolarGrid,
   PolarAngleAxis, PolarRadiusAxis,
@@ -7,8 +7,6 @@ import {
   CartesianGrid, Legend
 } from 'recharts'
 import './Competitor.css'
-
-const API = 'http://localhost:5000'
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -28,14 +26,74 @@ export default function Competitor() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeComp, setActiveComp] = useState(null)
+  const [nearbyResults, setNearbyResults] = useState(null)
+  const [nearbyLoading, setNearbyLoading] = useState(false)
+  const [locationError, setLocationError] = useState('')
+  const [userLocation, setUserLocation] = useState(null)
 
-  useEffect(() => {
-    axios.get(`${API}/api/competitor`)
-      .then(r => { setData(r.data); setActiveComp(r.data.competitors[0]); setLoading(false) })
+  // Dynamic inputs
+  const [fieldInput, setFieldInput] = useState('')
+  const [compInput, setCompInput] = useState('')
+
+  const fetchData = (f = '', c = '') => {
+    setLoading(true)
+    setNearbyResults(null)
+    competitorAPI.getData(f, c)
+      .then(r => { setData(r); setActiveComp(r.competitors[0]); setLoading(false) })
       .catch(() => setLoading(false))
-  }, [])
+  }
 
-  if (loading) return <div className="competitor"><div className="spinner" /></div>
+  useEffect(() => { fetchData() }, [])
+
+  const handleAnalyze = () => {
+    setNearbyResults(null)
+    fetchData(fieldInput, compInput)
+  }
+
+  const handleFindNearby = () => {
+    const industry = fieldInput.trim()
+    if (!industry) {
+      setLocationError('Please enter an industry first (e.g. Shoes, Food, Hotels)')
+      return
+    }
+    setLocationError('')
+    setNearbyLoading(true)
+    setNearbyResults(null)
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lng } = pos.coords
+        setUserLocation({ lat, lng })
+        try {
+          const res = await fetch(`http://localhost:5000/api/competitor/nearby?lat=${lat}&lng=${lng}&industry=${encodeURIComponent(industry)}&radius=3000`)
+          const json = await res.json()
+          if (json.error) throw new Error(json.error)
+          setNearbyResults(json)
+        } catch (err) {
+          setLocationError('Could not fetch nearby competitors: ' + err.message)
+        }
+        setNearbyLoading(false)
+      },
+      (err) => {
+        setLocationError('Location access denied. Please allow location in your browser.')
+        setNearbyLoading(false)
+      }
+    )
+  }
+
+  const handleExport = () => alert('Downloading Competitor Report PDF...')
+
+  if (loading) {
+    return (
+      <div className="competitor">
+        <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+          <div className="spinner" style={{ margin: '0 auto 1rem' }} />
+          <h3 style={{ color: 'var(--text)' }}>Analyzing Market Data...</h3>
+          <p style={{ color: 'var(--text-dim)' }}>Scanning news portals and extracting competitor intelligence.</p>
+        </div>
+      </div>
+    )
+  }
   if (!data) return <div className="competitor"><div className="card"><p style={{color:'var(--text-muted)'}}>Failed to load.</p></div></div>
 
   const radarData = activeComp
@@ -48,15 +106,99 @@ export default function Competitor() {
 
   return (
     <div className="competitor">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px' }}>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1>Competitor Analysis</h1>
-          <p>Market intelligence and competitive benchmarking</p>
+          <h1>Competitor Benchmarking</h1>
+          <p>Compare market share, pricing, and features against key industry rivals in real time</p>
         </div>
-        <div className="comp-last-updated">
-          <span>🔄 Updated just now</span>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <div className="comp-last-updated">
+            <span>🔄 Updated just now</span>
+          </div>
+          <button onClick={handleExport} style={{ padding: '8px 16px', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>📥</span> Export Report
+          </button>
         </div>
       </div>
+
+      {/* Configuration Panel */}
+      <div className="card" style={{ marginBottom: 24, padding: '20px' }}>
+        <h3 className="card-title" style={{ marginBottom: '4px' }}>🔍 Dynamic Market Analysis</h3>
+        <p style={{ fontSize: '0.82rem', color: 'var(--text-dim)', marginBottom: '1rem' }}>
+          Auto-loads competitors based on your industry set in <strong>Settings</strong>. Use these fields to explore a different industry or add specific competitors.
+        </p>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div style={{ flex: 1, minWidth: '200px' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-dim)', marginBottom: '6px' }}>
+              Override Industry <span style={{ opacity: 0.6 }}>(e.g. E-Commerce, FinTech, EdTech)</span>
+            </label>
+            <input 
+              type="text" 
+              placeholder="Leave blank to use industry from Settings" 
+              value={fieldInput}
+              onChange={(e) => setFieldInput(e.target.value)}
+              style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+            />
+          </div>
+          <div style={{ flex: 2, minWidth: '250px' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-dim)', marginBottom: '6px' }}>
+              Custom Competitors <span style={{ opacity: 0.6 }}>(comma separated, overrides auto-detect)</span>
+            </label>
+            <input 
+              type="text" 
+              placeholder="e.g., Shopify, Amazon, Meesho (optional)" 
+              value={compInput}
+              onChange={(e) => setCompInput(e.target.value)}
+              style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+            />
+          </div>
+          <button 
+            onClick={handleAnalyze}
+            style={{ padding: '10px 24px', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}
+          >
+            🔄 Re-Analyze
+          </button>
+          <button 
+            onClick={handleFindNearby}
+            disabled={nearbyLoading}
+            style={{ padding: '10px 24px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', cursor: nearbyLoading ? 'wait' : 'pointer', fontWeight: 500 }}
+          >
+            {nearbyLoading ? '📍 Locating...' : '📍 Find Nearby'}
+          </button>
+        </div>
+        {locationError && <p style={{ color: '#ef4444', fontSize: '0.9rem', marginTop: '1rem' }}>{locationError}</p>}
+      </div>
+
+      {/* Nearby Results Panel */}
+      {nearbyResults && (
+        <div className="card" style={{ marginBottom: 24, padding: '20px', background: 'linear-gradient(to right, rgba(16, 185, 129, 0.05), transparent)' }}>
+          <h3 className="card-title" style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '1.2rem' }}>📍</span> Real Nearby Competitors
+            <span style={{ background: '#10b981', color: '#fff', fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px' }}>LIVE GPS</span>
+          </h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginBottom: '1rem' }}>
+            Found {nearbyResults.results.length} <strong>{nearbyResults.industry}</strong> businesses within {nearbyResults.radius / 1000}km of your location.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
+            {nearbyResults.results.map((comp) => (
+              <div key={comp.id} style={{ padding: '12px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--bg2)', borderTop: `3px solid ${comp.color}` }}>
+                <div style={{ fontWeight: 'bold', color: 'var(--text)', marginBottom: '4px' }}>{comp.name}</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginBottom: '8px', display: 'flex', alignItems: 'flex-start', gap: '4px' }}>
+                  <span>🗺️</span> {comp.address}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem' }}>
+                  <span style={{ color: '#10b981', fontWeight: 500 }}>{comp.distanceLabel}</span>
+                  <span>⭐ {comp.rating}</span>
+                </div>
+              </div>
+            ))}
+            {nearbyResults.results.length === 0 && (
+              <div style={{ color: 'var(--text-dim)', fontSize: '0.9rem', padding: '1rem' }}>No matching businesses found nearby.</div>
+            )}
+          </div>
+        </div>
+      )}
+
 
       {/* Competitor Cards */}
       <div className="comp-cards-row">

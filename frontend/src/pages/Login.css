@@ -124,6 +124,24 @@
   gap: 8px;
   flex-wrap: wrap;
 }
+
+.login-platform-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.platform-badge {
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: #67e8f9;
+  font-weight: 700;
+}
+
 .sdg-badge {
   padding: 4px 12px;
   border-radius: 20px;
@@ -381,4 +399,12 @@
   .login-left { padding: 36px 28px; flex: none; }
   .login-right { padding: 32px 24px; }
   .login-features { display: none; }
+}
+@media (max-width: 480px) {
+  .login-left { padding: 24px 20px; }
+  .login-right { padding: 24px 18px; }
+  .login-card-header h1 { font-size: 1.5rem; }
+  .login-tagline h2 { font-size: 1.25rem; }
+  .login-sdg-badges { gap: 6px; }
+  .demo-accounts { flex-direction: column; align-items: flex-start; }
 }

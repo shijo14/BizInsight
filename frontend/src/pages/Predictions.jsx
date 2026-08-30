@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import {
   LineChart, Line, AreaChart, Area,
   XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, ReferenceLine
 } from 'recharts'
+import { predictionsAPI } from '../services/api'
 import './Predictions.css'
 
-const API = 'http://localhost:5000'
+const fmtINR = (v) => `₹${Number(v).toLocaleString('en-IN')}`
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -16,7 +16,7 @@ const CustomTooltip = ({ active, payload, label }) => {
         <div className="tooltip-label">{label}</div>
         {payload.filter(p => p.value != null).map((p, i) => (
           <div key={i} style={{ color: p.color, fontSize: '0.82rem' }}>
-            {p.name}: {typeof p.value === 'number' ? `$${p.value.toLocaleString()}` : p.value}
+            {p.name}: {typeof p.value === 'number' ? fmtINR(p.value) : p.value}
           </div>
         ))}
       </div>
@@ -53,28 +53,62 @@ const ConfidenceMeter = ({ value }) => (
 export default function Predictions() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  
+  // Scenario Simulator State
+  const [priceImpact, setPriceImpact] = useState(0) // %
+  const [marketingSpend, setMarketingSpend] = useState(0) // $k
 
   useEffect(() => {
-    axios.get(`${API}/api/predictions`)
-      .then(r => { setData(r.data); setLoading(false) })
+    predictionsAPI.getData()
+      .then(r => { setData(r); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
 
   if (loading) return <div className="predictions"><div className="spinner" /></div>
-  if (!data) return <div className="predictions"><div className="card"><p style={{color:'var(--text-muted)'}}>Failed to load.</p></div></div>
+  if (!data?.summary || !data?.historicalRevenue || !data?.revenueForecast || !data?.churnRisk || !data?.growthOpportunities || !data?.userGrowth) {
+    return <div className="predictions"><div className="card"><p style={{color:'var(--text-muted)'}}>Failed to load predictions data.</p></div></div>
+  }
 
-  // Merge historical + forecast for the revenue chart
+  // Merge historical + forecast for the revenue chart, applying scenario modifiers
   const revChartData = [
     ...data.historicalRevenue.map(d => ({ ...d, forecast: null, lower: null, upper: null })),
-    ...data.revenueForecast
+    ...data.revenueForecast.map((d, i) => {
+      // Compounding multiplier based on months out
+      const multiplier = 1 + (priceImpact / 100) + (marketingSpend / 1000 * 0.05 * (i + 1));
+      return {
+        ...d,
+        forecast: Math.round(d.forecast * multiplier),
+        upper: Math.round(d.upper * multiplier),
+        lower: Math.round(d.lower * multiplier)
+      }
+    })
   ]
+
+  const userGrowthForecast = data.userGrowth.filter(d => d.forecast != null).slice(-1)[0]?.forecast
 
   return (
     <div className="predictions">
+      <div className="pred-proactive-banner card">
+        <div>
+          <h3>From Reactive to Proactive</h3>
+          <p>
+            Traditional BI tools tell you what happened. BizInsight tells you what <strong>will</strong> happen — and what to do about it.
+            {data.modelInfo?.message ? ` ${data.modelInfo.message}` : ''}
+          </p>
+        </div>
+        {data.modelInfo && (
+          <div className="pred-model-meta">
+            <span>{data.modelInfo.modelsActive} models active</span>
+            <span>{data.modelInfo.accuracy}% accuracy</span>
+            <span>Last retrain: {new Date(data.modelInfo.lastRetrain).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+          </div>
+        )}
+      </div>
+
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px' }}>
         <div>
           <h1>AI Predictions</h1>
-          <p>ML-powered forecasting, churn risk, and growth opportunities</p>
+          <p>6-month revenue forecasting, Enterprise vs Startup churn risk, and growth opportunities</p>
         </div>
         <div className="ai-badge">
           <span className="ai-dot" />
@@ -88,7 +122,7 @@ export default function Predictions() {
         <div className="card pred-kpi-highlight">
           <div className="pred-kpi-icon">💰</div>
           <div className="pred-kpi-label">30-Day Revenue Forecast</div>
-          <div className="pred-kpi-value">${data.summary.revenueNext30.toLocaleString()}</div>
+          <div className="pred-kpi-value">{fmtINR(data.summary.revenueNext30)}</div>
           <div className="badge badge-up">↑ +{data.summary.revenueGrowth}% projected</div>
           <ConfidenceMeter value={data.summary.confidence} />
         </div>
@@ -107,8 +141,30 @@ export default function Predictions() {
         <div className="card pred-kpi-card">
           <div className="pred-kpi-icon">📈</div>
           <div className="pred-kpi-label">User Growth (Q3)</div>
-          <div className="pred-kpi-value">1,472</div>
+          <div className="pred-kpi-value">{userGrowthForecast?.toLocaleString('en-IN') || '1,472'}</div>
           <div className="badge badge-up">↑ 22.3% projected</div>
+        </div>
+      </div>
+
+      {/* Scenario Simulator */}
+      <div className="card" style={{ marginBottom: 24, border: '1px solid var(--accent)', background: 'rgba(99,102,241,0.05)' }}>
+        <h3 className="card-title">🎛️ "What-If" Scenario Simulator</h3>
+        <p className="card-subtitle">Adjust variables below to see real-time impact on the AI forecast model.</p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginTop: '20px' }}>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text)' }}>Pricing Strategy (+/- %)</label>
+              <span style={{ fontWeight: 'bold', color: 'var(--accent)' }}>{priceImpact}%</span>
+            </div>
+            <input type="range" min="-20" max="50" step="5" value={priceImpact} onChange={e => setPriceImpact(Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--accent)' }} />
+          </div>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text)' }}>Additional Marketing Spend</label>
+              <span style={{ fontWeight: 'bold', color: 'var(--accent)' }}>+${marketingSpend}k</span>
+            </div>
+            <input type="range" min="0" max="100" step="10" value={marketingSpend} onChange={e => setMarketingSpend(Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--accent)' }} />
+          </div>
         </div>
       </div>
 
@@ -140,7 +196,7 @@ export default function Predictions() {
               </defs>
               <CartesianGrid stroke="rgba(255,255,255,0.04)" />
               <XAxis dataKey="month" stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} />
-              <YAxis stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
+              <YAxis stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `₹${(v/100000).toFixed(1)}L`} />
               <Tooltip content={<CustomTooltip />} />
               <ReferenceLine x="Jul" stroke="rgba(255,255,255,0.15)" strokeDasharray="4 4" label={{ value: 'Now', fill: '#94a3b8', fontSize: 11 }} />
               <Area type="monotone" dataKey="upper"    name="Upper Bound" stroke="transparent" fill="url(#bandGrad)" />
@@ -157,7 +213,7 @@ export default function Predictions() {
         {/* Churn Risk by Segment */}
         <div className="card">
           <h3 className="card-title">Churn Risk by Segment</h3>
-          <p className="card-subtitle">Probability of cancellation in next 90 days</p>
+          <p className="card-subtitle">Enterprise vs Startup — probability of cancellation in next 90 days</p>
           <div className="churn-list">
             {data.churnRisk.map(s => (
               <div key={s.segment} className="churn-row">

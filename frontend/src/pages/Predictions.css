@@ -1,5 +1,47 @@
 /* Predictions.css */
 
+.pred-proactive-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 24px;
+  padding: 22px 24px;
+  background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(16,185,129,0.06));
+  border-color: rgba(99,102,241,0.25) !important;
+}
+
+.pred-proactive-banner h3 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+
+.pred-proactive-banner p {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+  font-size: 0.9rem;
+  max-width: 720px;
+}
+
+.pred-proactive-banner strong {
+  color: var(--text);
+}
+
+.pred-model-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #a5b4fc;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .pred-proactive-banner { flex-direction: column; }
+  .pred-model-meta { flex-direction: row; flex-wrap: wrap; gap: 12px; }
+}
+
 /* AI Badge */
 .ai-badge {
   display: flex;
@@ -158,4 +200,9 @@
 @media (max-width: 900px) {
   .pred-kpi-grid { grid-template-columns: 1fr; }
   .pred-bottom-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .pred-kpi-value { font-size: 1.5rem; }
+  .forecast-legend { gap: 8px; }
+  .ai-badge { flex-wrap: wrap; font-size: 0.75rem; padding: 8px 12px; }
 }

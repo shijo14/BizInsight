@@ -228,9 +228,14 @@
   .sidebar {
     transform: translateX(-100%);
     box-shadow: none;
+    z-index: 300;
   }
   .sidebar.open {
     transform: translateX(0);
     box-shadow: 20px 0 60px rgba(0,0,0,0.5);
   }
+}
+@media (max-width: 480px) {
+  .sidebar { width: min(var(--sidebar-w), 85vw); }
+  .nav-item { padding: 12px 14px; }
 }

@@ -9,32 +9,49 @@ const MENU = [
   {
     id: 'overview', label: 'Overview',
     items: [
-      { to: '/dashboard', icon: '⊞', label: 'Dashboard' },
-      { to: '/live-data', icon: '🌐', label: 'Live Data', badge: { type: 'new', text: 'New' } }
+      { to: '/dashboard', icon: '⊞', label: 'Dashboard', module: 'dashboard' },
+      { to: '/live-data', icon: '🌐', label: 'Live Data', badge: { type: 'new', text: 'New' }, module: 'liveData' },
+      { to: '/financials', icon: '💰', label: 'Financials' }
     ]
   },
   {
     id: 'ai-features', label: 'AI Features',
     items: [
-      { to: '/analytics',   icon: '📊', label: 'Analytics' },
-      { to: '/sentiment',   icon: '💬', label: 'Sentiment' },
-      { to: '/competitor',  icon: '🔍', label: 'Competitor' },
-      { to: '/predictions', icon: '📈', label: 'Predictions' }
+      { to: '/analytics',   icon: '📊', label: 'Analytics', module: 'analytics' },
+      { to: '/sentiment',   icon: '💬', label: 'Sentiment', module: 'sentiment' },
+      { to: '/competitor',  icon: '🔍', label: 'Competitor', module: 'competitor' },
+      { to: '/predictions', icon: '📈', label: 'Predictions', module: 'predictions' }
     ]
   },
   {
     id: 'system', label: 'System',
     items: [
-      { to: '/reports',  icon: '📋', label: 'Reports' },
-      { to: '/settings', icon: '⚙️',  label: 'Settings' },
+      { to: '/data-sources', icon: '🗄️', label: 'Data Sources', module: 'dataSources' },
+      { to: '/reports',  icon: '📋', label: 'Reports', module: 'reports' },
+      { to: '/settings', icon: '⚙️',  label: 'Settings', restrictViewer: true, module: 'settings' },
       { to: '/admin',    icon: '🛡️',  label: 'Admin Panel', adminOnly: true }
     ]
   }
 ]
 
 function SidebarSection({ section, isSuperAdmin }) {
+  const { currentUser, permissions } = useAuth()
+  const role = currentUser?.role || 'viewer'
+  const isViewer = role === 'viewer'
+
   const [collapsed, setCollapsed] = useState(false)
-  const visibleItems = section.items.filter(item => !item.adminOnly || isSuperAdmin)
+  const visibleItems = section.items.filter(item => {
+    if (item.adminOnly && !isSuperAdmin) return false
+    
+    if (item.module && !isSuperAdmin) {
+      if (!permissions[role]?.[item.module]) return false
+    } else if (item.restrictViewer && isViewer) {
+      return false
+    }
+
+    return true
+  })
+  
   if (visibleItems.length === 0) return null
 
   return (
@@ -62,7 +79,7 @@ function SidebarSection({ section, isSuperAdmin }) {
 }
 
 export default function Sidebar({ open }) {
-  const { isSuperAdmin } = useRole()
+  const { isSuperAdmin, roleLabel } = useRole()
   const { currentUser, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -72,7 +89,6 @@ export default function Sidebar({ open }) {
   }
 
   const initials = currentUser?.avatar || currentUser?.name?.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() || 'BZ'
-  const displayRole = currentUser?.role === 'superadmin' ? 'Super Admin' : 'Admin'
 
   return (
     <>
@@ -93,7 +109,7 @@ export default function Sidebar({ open }) {
           <div className="sb-avatar">{initials}</div>
           <div className="sb-user-info">
             <span className="sb-user-name">{currentUser?.name || 'BizInsight User'}</span>
-            <span className="sb-user-role">{displayRole}</span>
+            <span className="sb-user-role">{roleLabel}</span>
           </div>
           <span className="sb-online-dot" title="Online" />
         </div>

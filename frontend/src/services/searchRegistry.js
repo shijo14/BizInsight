@@ -9,7 +9,7 @@ export function registerSearchItems(items) {
   })
 }
 
-export function searchRegistry(query, navigate, setTheme, setRole) {
+export function searchRegistry(query, navigate, setTheme) {
   if (!query || query.trim().length < 1) return []
   const q = query.toLowerCase()
 
@@ -28,9 +28,6 @@ export function searchRegistry(query, navigate, setTheme, setRole) {
     { id: 'theme-dark',       label: 'Switch to Dark Mode',  description: 'Enable dark theme',                  category: 'Actions', icon: '🌙', action: () => setTheme('dark')          },
     { id: 'theme-light',      label: 'Switch to Light Mode', description: 'Enable light theme',                 category: 'Actions', icon: '☀️', action: () => setTheme('light')         },
     { id: 'theme-modern',     label: 'Switch to Modern Mode',description: 'Enable modern neon theme',           category: 'Actions', icon: '✨', action: () => setTheme('modern')        },
-    // Roles
-    { id: 'role-superadmin',  label: 'Switch to Super Admin',description: 'Activate super admin role',          category: 'Actions', icon: '👑', action: () => setRole('superadmin')     },
-    { id: 'role-admin',       label: 'Switch to Admin',      description: 'Activate admin role',                category: 'Actions', icon: '👤', action: () => setRole('admin')          },
     // Features info
     { id: 'info-ai',          label: 'AI & Machine Learning',description: 'Pattern recognition & automation',   category: 'Features', icon: '🤖', action: () => navigate('/dashboard')   },
     { id: 'info-pred',        label: 'Predictive Analytics', description: 'Sales & revenue forecasting',        category: 'Features', icon: '🔮', action: () => navigate('/predictions') },

@@ -175,8 +175,8 @@ select.form-input { cursor: pointer; }
 .toggle-desc { font-size: 0.8rem; color: var(--text-muted); }
 
 /* Integrations */
-.integrations-grid { display: flex; flex-direction: column; gap: 12px; }
-.integration-card {
+.settings-integrations-grid { display: flex; flex-direction: column; gap: 12px; }
+.settings-integration-card {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -186,8 +186,8 @@ select.form-input { cursor: pointer; }
   border-radius: var(--radius);
   transition: var(--trans);
 }
-.integration-card:hover { border-color: rgba(255,255,255,0.1); }
-.integration-card.connected { border-color: rgba(16,185,129,0.2); background: rgba(16,185,129,0.03); }
+.settings-integration-card:hover { border-color: rgba(255,255,255,0.1); }
+.settings-integration-card.connected { border-color: rgba(16,185,129,0.2); background: rgba(16,185,129,0.03); }
 .int-icon {
   width: 46px; height: 46px;
   border-radius: 12px;
@@ -282,4 +282,11 @@ select.form-input { cursor: pointer; }
   .settings-nav { flex-direction: row; flex-wrap: wrap; position: static; }
   .settings-form-grid { grid-template-columns: 1fr; }
   .plan-features { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .plan-features { grid-template-columns: 1fr; }
+  .plan-price { font-size: 2rem; }
+  .profile-avatar-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .plan-actions { flex-wrap: wrap; }
+  .security-row { flex-direction: column; align-items: flex-start; gap: 10px; }
 }

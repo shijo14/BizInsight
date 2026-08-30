@@ -16,22 +16,23 @@ const NOTIFICATIONS = [
 ]
 
 const CATBAR_ITEMS = [
-  { label: 'Dashboard',   icon: '⊞', path: '/dashboard'   },
-  { label: 'Analytics',   icon: '📊', path: '/analytics'   },
-  { label: 'Sentiment',   icon: '💬', path: '/sentiment'   },
-  { label: 'Competitor',  icon: '🔍', path: '/competitor'  },
-  { label: 'Predictions', icon: '📈', path: '/predictions' },
-  { label: 'Live Data',   icon: '🌐', path: '/live-data'   },
-  { label: 'Reports',     icon: '📋', path: '/reports'     },
-  { label: 'Settings',    icon: '⚙️',  path: '/settings'    },
+  { label: 'Dashboard',   icon: '⊞', path: '/dashboard', module: 'dashboard'   },
+  { label: 'Analytics',   icon: '📊', path: '/analytics', module: 'analytics'   },
+  { label: 'Sentiment',   icon: '💬', path: '/sentiment', module: 'sentiment'   },
+  { label: 'Competitor',  icon: '🔍', path: '/competitor', module: 'competitor'  },
+  { label: 'Predictions', icon: '📈', path: '/predictions', module: 'predictions' },
+  { label: 'Live Data',   icon: '🌐', path: '/live-data', module: 'liveData'   },
+  { label: 'Data Sources', icon: '🗄️', path: '/data-sources', module: 'dataSources' },
+  { label: 'Reports',     icon: '📋', path: '/reports', module: 'reports'     },
+  { label: 'Settings',    icon: '⚙️',  path: '/settings', module: 'settings'    },
 ]
 
 export default function Topbar({ onToggleSidebar, sidebarOpen }) {
   const navigate    = useNavigate()
   const location    = useLocation()
-  const { theme, setTheme }    = useTheme()
-  const { role, setRole, isSuperAdmin } = useRole()
-  const { currentUser, logout } = useAuth()
+  const { theme, setTheme } = useTheme()
+  const { isSuperAdmin, isViewer, roleLabel } = useRole()
+  const { currentUser, logout, permissions } = useAuth()
 
   const handleLogout = () => {
     logout()
@@ -45,23 +46,30 @@ export default function Topbar({ onToggleSidebar, sidebarOpen }) {
   const [focusedIdx,     setFocusedIdx]     = useState(-1)
 
   const [showNotifs,     setShowNotifs]     = useState(false)
-  const [showRole,       setShowRole]       = useState(false)
-  const [notifCount,     setNotifCount]     = useState(3)
+  const [notifCount,     setNotifCount]     = useState(NOTIFICATIONS.length)
 
   const searchRef   = useRef(null)
   const notifsRef   = useRef(null)
-  const roleRef     = useRef(null)
+
+  // ── Dismiss a notification
+  const handleDismissNotif = (id, e) => {
+    e.stopPropagation()
+    // Simulated dismiss - in a real app this would call an API
+    const el = document.getElementById(`notif-${id}`)
+    if (el) el.style.display = 'none'
+    setNotifCount(prev => Math.max(0, prev - 1))
+  }
 
   // ── Search ──────────────────────────────────────────────────
   const doSearch = useCallback((q) => {
     if (!q.trim()) { setSearchResults([]); return }
-    const results = searchRegistry(q, navigate, setTheme, setRole)
+    const results = searchRegistry(q, navigate, setTheme)
     const filtered = searchCategory === 'All'
       ? results
       : results.filter(r => r.category === searchCategory)
     setSearchResults(filtered)
     setFocusedIdx(-1)
-  }, [navigate, setTheme, setRole, searchCategory])
+  }, [navigate, setTheme, searchCategory])
 
   useEffect(() => { doSearch(searchQuery) }, [searchQuery, searchCategory, doSearch])
 
@@ -75,7 +83,6 @@ export default function Topbar({ onToggleSidebar, sidebarOpen }) {
       if (e.key === 'Escape') {
         setSearchFocused(false)
         setShowNotifs(false)
-        setShowRole(false)
       }
     }
     window.addEventListener('keydown', handler)
@@ -107,7 +114,6 @@ export default function Topbar({ onToggleSidebar, sidebarOpen }) {
   useEffect(() => {
     const handler = (e) => {
       if (notifsRef.current && !notifsRef.current.contains(e.target)) setShowNotifs(false)
-      if (roleRef.current   && !roleRef.current.contains(e.target))   setShowRole(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
@@ -249,32 +255,43 @@ export default function Topbar({ onToggleSidebar, sidebarOpen }) {
           </div>
 
           {/* Notifications */}
-          <div style={{ position: 'relative' }} ref={notifsRef}>
-            <button
-              className="topbar-notif-btn"
-              id="notifBtn"
-              onClick={() => { setShowNotifs(v => !v); setShowRole(false) }}
-              aria-label="Notifications"
+          <div className="topbar-action-wrapper" ref={notifsRef}>
+            <button 
+              className={`topbar-btn ${showNotifs ? 'active' : ''}`}
+              onClick={() => { setShowNotifs(!showNotifs) }}
             >
               🔔
-              {notifCount > 0 && <span className="notif-count">{notifCount}</span>}
+              {notifCount > 0 && <span className="notif-badge">{notifCount}</span>}
             </button>
+            
             {showNotifs && (
-              <div className="notif-dropdown">
-                <div className="notif-dropdown-header">
-                  <strong>Notifications</strong>
-                  <button className="notif-mark-all" onClick={() => setNotifCount(0)}>Mark all read</button>
+              <div className="topbar-dropdown notif-dropdown">
+                <div className="notif-header">
+                  <span className="notif-title">Notifications</span>
+                  <button className="notif-clear" onClick={() => setNotifCount(0)}>Mark all read</button>
                 </div>
-                {NOTIFICATIONS.map(n => (
-                  <div key={n.id} className="notif-item">
-                    <div className="notif-dot-type" style={{ background: n.dot }} />
-                    <div className="notif-item-text">
-                      <strong>{n.title}</strong>
-                      {n.text}
-                      <span className="notif-time">{n.time}</span>
+                <div className="notif-list">
+                  {notifCount === 0 ? (
+                    <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-dim)', fontSize: '0.85rem' }}>
+                      You have no new notifications.
                     </div>
-                  </div>
-                ))}
+                  ) : (
+                    NOTIFICATIONS.map(n => (
+                      <div id={`notif-${n.id}`} key={n.id} className="notif-item">
+                        <div className="notif-dot-type" style={{ background: n.dot }} />
+                        <div className="notif-item-text">
+                          <strong>{n.title}</strong>
+                          {n.text}
+                          <span className="notif-time">{n.time}</span>
+                        </div>
+                        <button className="notif-dismiss" onClick={(e) => handleDismissNotif(n.id, e)}>✕</button>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div className="notif-footer">
+                  <button onClick={() => { setShowNotifs(false); navigate('/settings') }}>View Alert Settings</button>
+                </div>
               </div>
             )}
           </div>
@@ -290,51 +307,24 @@ export default function Topbar({ onToggleSidebar, sidebarOpen }) {
             <span className="logout-label">Sign Out</span>
           </button>
 
-          {/* Role Switcher */}
-          <div className="role-switcher" ref={roleRef}>
-            <button
-              className="role-badge-btn"
-              id="roleSwitcherBtn"
-              onClick={() => { setShowRole(v => !v); setShowNotifs(false) }}
-              aria-haspopup="true"
-              aria-expanded={showRole}
-            >
-              <span className="role-crown">{isSuperAdmin ? '👑' : '👤'}</span>
-              <span className="role-name">{isSuperAdmin ? 'Super Admin' : 'Admin'}</span>
-              <span className={`role-chevron ${showRole ? 'open' : ''}`}>▼</span>
-            </button>
-            {showRole && (
-              <div className="role-dropdown">
-                <div className="role-dropdown-header">
-                  <strong>Shijo Varghese</strong>
-                  <span>Switch active role</span>
-                </div>
-                {[
-                  { key: 'superadmin', label: 'Super Admin', desc: 'Full system access + Admin Panel', icon: '👑', cls: 'superadmin' },
-                  { key: 'admin',      label: 'Admin',       desc: 'Analytics & module access only',   icon: '👤', cls: 'admin'      },
-                ].map(opt => (
-                  <button
-                    key={opt.key}
-                    className={`role-option ${role === opt.key ? 'selected' : ''}`}
-                    onClick={() => { setRole(opt.key); setShowRole(false) }}
-                  >
-                    <div className={`role-option-icon ${opt.cls}`}>{opt.icon}</div>
-                    <div className="role-option-info">
-                      <strong>{opt.label}</strong>
-                      <span>{opt.desc}</span>
-                    </div>
-                    {role === opt.key && <span style={{ marginLeft: 'auto', color: 'var(--accent)', fontSize: '0.8rem' }}>✓</span>}
-                  </button>
-                ))}
-              </div>
-            )}
+          {/* Role badge (RBAC) */}
+          <div className="role-switcher">
+            <div className="role-badge-btn role-badge-readonly" title={`Signed in as ${currentUser?.name || 'User'}`}>
+              <span className="role-crown">{isSuperAdmin ? '👑' : roleLabel === 'Standard User' ? '👁' : '👤'}</span>
+              <span className="role-name">{roleLabel}</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* ── Row 2: Category bar ─────────────────────────────── */}
       <div className="topbar-catbar" role="navigation" aria-label="Quick navigation">
-        {CATBAR_ITEMS.filter(c => c.path !== '/admin' || isSuperAdmin).map(item => (
+        {CATBAR_ITEMS.filter(c => {
+          const role = currentUser?.role || 'viewer'
+          if (!isSuperAdmin && c.module && !permissions[role]?.[c.module]) return false
+          if (c.path === '/settings' && isViewer) return false
+          return c.path !== '/admin' || isSuperAdmin
+        }).map(item => (
           <button
             key={item.path}
             className={`catbar-item ${location.pathname === item.path ? 'active' : ''}`}

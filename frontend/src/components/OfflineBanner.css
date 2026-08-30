@@ -1,0 +1,29 @@
+.offline-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  font-size: 0.85rem;
+  border-bottom: 1px solid transparent;
+}
+
+.offline-banner.offline {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+.offline-banner.syncing {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+}
+
+.offline-banner-icon {
+  flex-shrink: 0;
+}
+
+.offline-banner strong {
+  color: inherit;
+  font-weight: 600;
+}

@@ -120,3 +120,9 @@
 @media (max-width: 900px) {
   .live-grid { grid-template-columns: 1fr; }
 }
+@media (max-width: 600px) {
+  .weather-widget { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .weather-temp { font-size: 2.2rem; }
+  .crypto-card { min-width: 130px; }
+  .crypto-price { font-size: 0.95rem; }
+}

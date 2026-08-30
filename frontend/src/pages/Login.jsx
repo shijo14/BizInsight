@@ -6,7 +6,8 @@ import './Login.css'
 
 const DEMO_ACCOUNTS = [
   { label: '👑 Super Admin', email: 'shijo@bizinsight.io',  password: 'Admin@123', role: 'Full access + Admin Panel' },
-  { label: '👤 Admin',       email: 'anika@bizinsight.io',  password: 'Admin@123', role: 'Analytics & modules access' },
+  { label: '👤 Admin',       email: 'anika@bizinsight.io',  password: 'Admin@123', role: 'Manage users, reports & integrations' },
+  { label: '👁 Standard User', email: 'david@bizinsight.io', password: 'Admin@123', role: 'View-only dashboard access' },
 ]
 
 export default function Login() {
@@ -66,8 +67,13 @@ export default function Login() {
             <EpicLogo animate />
           </div>
           <div className="login-tagline">
-            <h2>AI-Powered Business Intelligence</h2>
-            <p>Unlock insights. Drive growth. Compete smarter.</p>
+            <h2>Enterprise Analytics Platform</h2>
+            <p>Offline-resilient, AI-powered business intelligence — built for decision-makers who can't afford to wait.</p>
+          </div>
+          <div className="login-platform-badges">
+            <span className="platform-badge">PROGRESSIVE WEB APP</span>
+            <span className="platform-badge">AI-POWERED</span>
+            <span className="platform-badge">OFFLINE-FIRST</span>
           </div>
           <div className="login-sdg-badges">
             <span className="sdg-badge">🎯 SDG 8</span>
@@ -75,7 +81,7 @@ export default function Login() {
             <span className="sdg-badge">♻️ SDG 12</span>
           </div>
           <div className="login-features">
-            {['Predictive Analytics', 'Sentiment Analysis', 'Competitor Intelligence', 'AI Forecasting'].map(f => (
+            {['Real-time Live Data Feeds', 'AI Revenue & Churn Predictions', 'Offline-First PWA Architecture', 'Role-Based Access Control'].map(f => (
               <div key={f} className="login-feature-item">
                 <span className="lf-dot" />
                 {f}
@@ -172,10 +178,7 @@ export default function Login() {
               </button>
             </form>
 
-            <div className="login-hint">
-              <span>Default password for all demo accounts:</span>
-              <code>Admin@123</code>
-            </div>
+
           </div>
 
           <div className="login-footer">
